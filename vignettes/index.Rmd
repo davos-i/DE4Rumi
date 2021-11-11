@@ -17,3 +17,16 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(DE4Rumi)
 ```
+
+# 1. Setup experiment metadata
+```{r}
+species
+```
+
+
+# Import matrix
+Import data and
+```{r}
+
+```
+
