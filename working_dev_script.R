@@ -9,11 +9,11 @@ devtools::load_all()
 
 
 #This has been added to .Rbuildignore using usethis::use_build_ignore()
-usethis::use_build_ignore("./R/working_dev_script.R")
+usethis::use_build_ignore("./working_dev_script.R")
 
 
 #the usethis package is very useful for most required package dev
-library(usethis)
+#library(usethis)
 
 
 #See instructions for creating documentation with roxegon: https://r-pkgs.org/man.html

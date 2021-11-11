@@ -4,10 +4,10 @@
 \alias{check_count_matrix}
 \title{Check formatting of supplied count matrix}
 \usage{
-check_count_matrix()
+check_count_matrix(data = cts)
 }
 \description{
-\code{check_count_file} returns messages to the console to determine if count
+\code{check_count_matrix()} returns messages to the console to determine if count
 matrix has been formatted correctly for use in downstream analysis
 }
 \details{
