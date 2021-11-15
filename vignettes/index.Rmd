@@ -15,12 +15,19 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(DE4Rumi)
+library(dplyr)
+library(DESeq2)
+#library(DE4Rumi)
 ```
 
 # 1. Setup experiment metadata
+
+coldata assumes 1 column is Region (top level factor), which all data within this is sequenced 
+
+
+
 ```{r}
-species
+
 ```
 
 

@@ -4,23 +4,62 @@
 #' Check formatting of supplied count matrix
 #'
 #' \code{check_count_matrix()} returns messages to the console to determine if
-#' count matrix has been formatted correctly for use in downstream analysis
+#' count matrix has been formatted correctly for use in downstream analysis, and
+#'  to see if column names match colData (metadata for each column).
 #'
 #' The count matrix, normally as outputted from featureCounts, needs to be
-#' formatted with:\itemize{
-#' \item Column headings that match metadata
-#' \item No rownames
-#' \item First column titled gene_ensembl and contains all gene ensembl names
-#' }This function also prints the dimensions and predicted treatments to console.
-#' @param data Dataframe of counts data to check.
+#' formatted with:\itemize{ \item Column headings that match metadata \item No
+#' rownames \item First column titled gene_ensembl and contains all gene ensembl
+#' names }
+#' This function also prints the dimensions and predicted treatments to
+#' console.
+#'
+#' @param count_data Dataframe of counts data to check.
+#' @param colData Dataframe of column annotation data. each column should be
+#'   metadata about the sample/animal. Particularly include all treatment info
+#'   and animal ID in columns.
+#' @param column_with_col_names non-string. Name of the column in \code{colData}
+#'   that matches names of columns in \code{count_data}. Should not include
+#'   \code{ gene_ensembl} column as this is automatically detected.
+#'
+#' @return Returns a dataframe of \code{count_data} with columns ordered to
+#' match names in the \code{column_with _col_names} column of \code{colData}.
 #'
 #' @export
 
-check_count_matrix <- function(data) {
+check_count_matrix <- function(count_data,
+                               colData,
+                               column_with_col_names = rownames) {
   #check column names match metadata
-  print("**ADD colname match metadata check**")
+  #select column names (not include gene_ensembl column)
+  count_data_names <- count_data %>%
+    select(-.data$gene_ensembl) %>%
+    colnames()
+
+  colData_names <- colData %>%
+    select({{ column_with_col_names }}) %>%
+    magrittr::extract2(ensym(column_with_col_names))
+
+
+  #1 do names ALL match (not necessarily in order)
+  names_logical <- all(count_data_names %in% colData_names)
+
+  if(names_logical == TRUE){
+    message(crayon::black$bgGreen$bold("PASS: All columns in count_data have matching data in colData"))
+  } else if(names_logical == FALSE){
+    #2 if not, which ones are missing
+     message("FAIL: Not all columns in count_data have matching data in colData")
+    message("Missing samples:")
+    print(count_data_names[which(!(count_data_names %in% colData_names))])
+    message("Function will now output count_data without these columns!!")
+  }
+
+  #re-order count matrix columns to match coldata
+  #(and only select columns with data)
+  count_data_out <- count_data %>% select(.data$gene_ensembl, colData_names)
+
   #check there is no rownames
-  if (tibble::has_rownames(data) == TRUE) {
+  if (tibble::has_rownames(count_data) == TRUE) {
     message(
       paste(
         "FAIL: Rownames detected but should not be used.",
@@ -28,13 +67,13 @@ check_count_matrix <- function(data) {
       )
     )
   } else {
-    message("PASS: Rownames not detected")
+    message(crayon::black$bgGreen$bold("PASS: Rownames not detected"))
   }
 
   #Check if first column name is "gene_ensembl"
-  col_name_first_col <- colnames(data)[1]
+  col_name_first_col <- colnames(count_data)[1]
   if (col_name_first_col == "gene_ensembl") {
-    message("PASS: First column name is 'gene_ensembl'")
+    message(crayon::black$bgGreen$bold("PASS: First column name is 'gene_ensembl'"))
   } else {
     message(
       paste0(
@@ -46,11 +85,21 @@ check_count_matrix <- function(data) {
   }
 
   #output dimensions
-  message(crayon::green("dimensions of full counts dataset"))
+  message(crayon::green("\n Dimensions of raw counts dataset BEFORE sorting:"))
   message(crayon::green(paste(
-    "genes: ", dim(data)[1], "    samples: ", dim(data)[2] - 1
-  )))
+    "genes: ", dim(count_data)[1],
+    "    samples: ", dim(count_data)[2] - 1)
+    ))
 
+  message(crayon::blue(paste("\n Number of samples in colData:"),
+                       length(colData_names)))
+
+  message(crayon::green("\n Dimensions of raw counts dataset AFTER sorting:"))
+  message(crayon::green(paste(
+    "genes: ", dim(count_data_out)[1],
+    "    samples: ", dim(count_data_out)[2] - 1)
+  ))
+return(count_data_out)
 }
 
 
@@ -114,11 +163,13 @@ annotate_gene_ensembl <- function(data, organism = "oaries") {
 #'
 #'@param coldata either a dataframe or a call to colData() on a DESeqDataSet
 #'@param contrast_factor non-string. Name of column containing treatments to contrast
-#'@param top_level_name string. Name of top level (e.g. region) to filter data
+#'@param top_level_column_name non-string.
+#'Name of column containing top level variable. Defaults to: \code{Region}.
+#'@param top_level_filter string. Name of top level (e.g. region) to filter data
 #'with.
 #'
 #'@export
-
+#'
 make_pairwise_combinations <-
   function(coldata,
            contrast_factor,
@@ -139,7 +190,6 @@ make_pairwise_combinations <-
 
     utils::combn(unique_contrast_levels, 2, simplify = FALSE)  #this makes the combos
   }
-
 
 
 
