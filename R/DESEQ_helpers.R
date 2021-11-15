@@ -29,7 +29,7 @@
 
 check_count_matrix <- function(count_data,
                                colData,
-                               column_with_col_names = rownames) {
+                               column_with_col_names = sample_names) {
   #check column names match metadata
   #select column names (not include gene_ensembl column)
   count_data_names <- count_data %>%
@@ -162,7 +162,7 @@ annotate_gene_ensembl <- function(data, organism = "oaries") {
 #'e.g. \code{[1] "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI"}
 #'
 #'@param coldata either a dataframe or a call to colData() on a DESeqDataSet
-#'@param contrast_factor non-string. Name of column containing treatments to contrast
+#'@param contrast_factor string. Name of column containing treatments to contrast
 #'@param top_level_column_name non-string.
 #'Name of column containing top level variable. Defaults to: \code{Region}.
 #'@param top_level_filter string. Name of top level (e.g. region) to filter data
@@ -172,13 +172,14 @@ annotate_gene_ensembl <- function(data, organism = "oaries") {
 #'
 make_pairwise_combinations <-
   function(coldata,
-           contrast_factor,
-           top_level_column_name = Region,
-           top_level_filter){
+           contrast_factor#,
+           #top_level_column_name = Region,
+          # top_level_filter
+          ){
     unique_contrast_levels <-
       coldata %>%
       as.data.frame() %>%
-      dplyr::filter({{ top_level_column_name }} == top_level_filter) %>%
+     # dplyr::filter({{ top_level_column_name }} == top_level_filter) %>%
       magrittr::extract2(contrast_factor) %>%
       as.character() %>% #removes factors if using colData(dds) as input
       unique()
