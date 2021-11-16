@@ -4,17 +4,12 @@
 \alias{make_pairwise_combinations}
 \title{Make pairwise combinations}
 \usage{
-make_pairwise_combinations(
-  coldata,
-  contrast_factor,
-  top_level_column_name = Region,
-  top_level_filter
-)
+make_pairwise_combinations(coldata, contrast_factor)
 }
 \arguments{
 \item{coldata}{either a dataframe or a call to colData() on a DESeqDataSet}
 
-\item{contrast_factor}{non-string. Name of column containing treatments to contrast}
+\item{contrast_factor}{string. Name of column containing treatments to contrast}
 
 \item{top_level_column_name}{non-string.
 Name of column containing top level variable. Defaults to: \code{Region}.}
@@ -27,9 +22,8 @@ with.}
 combinations of treatment comparisons
 }
 \details{
-This takes the colData from the dds object, looks for a column called Region to
-filter out only the required top level, finds the column name defined by
-\code{contrast_factor} to find all unique treatment names as input to a call
+This takes the colData from a dds object and finds the column name defined by
+\code{contrast_factor} to generate all unique treatment names as input to a call
 to \code{combn()} to get all unique pairwise comparisons.
 Returns a list of characters of length 2. \cr
 e.g. \code{[1] "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI"}

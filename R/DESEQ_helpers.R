@@ -33,11 +33,11 @@ check_count_matrix <- function(count_data,
   #check column names match metadata
   #select column names (not include gene_ensembl column)
   count_data_names <- count_data %>%
-    select(-.data$gene_ensembl) %>%
+    dplyr::select(-.data$gene_ensembl) %>%
     colnames()
 
   colData_names <- colData %>%
-    select({{ column_with_col_names }}) %>%
+    dplyr::select({{ column_with_col_names }}) %>%
     magrittr::extract2(ensym(column_with_col_names))
 
 
@@ -56,7 +56,8 @@ check_count_matrix <- function(count_data,
 
   #re-order count matrix columns to match coldata
   #(and only select columns with data)
-  count_data_out <- count_data %>% select(.data$gene_ensembl, colData_names)
+  count_data_out <- count_data %>%
+    dplyr::select(.data$gene_ensembl, colData_names)
 
   #check there is no rownames
   if (tibble::has_rownames(count_data) == TRUE) {
@@ -154,9 +155,8 @@ annotate_gene_ensembl <- function(data, organism = "oaries") {
 #'\code{make_pairwise_combinations()} creates a list of all possible unique
 #'combinations of treatment comparisons
 #'
-#'This takes the colData from the dds object, looks for a column called Region to
-#'filter out only the required top level, finds the column name defined by
-#'\code{contrast_factor} to find all unique treatment names as input to a call
+#'This takes the colData from a dds object and finds the column name defined by
+#'\code{contrast_factor} to generate all unique treatment names as input to a call
 #'to \code{combn()} to get all unique pairwise comparisons.
 #'Returns a list of characters of length 2. \cr
 #'e.g. \code{[1] "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI"}
@@ -194,6 +194,99 @@ make_pairwise_combinations <-
 
 
 
+#'Calculate DESEQ results
+#'
+#'Internal function to generate a list of DESEQ2 result objects for multiple
+#'pairwise comparisons
+#'
+#'This takes a dds object, which is pre-filtered to only contain one top-level
+#'(e.g. Tissue Region) and uses the \code{make_pairwise_combinations} function
+#'to generate all possible pairwise combinations, then use this to make all res
+#'objects. It is designed to be used within larger function to automate DESeq2.
+#'
+#'@param dds_object The dds object, after DESeq2 has been run (e.g. dds_wald).
+#'  Normally with only 1 top-level filter (e.g. Tissue Region)
+#'@param contrast_factor Non-string. Name of the column containing the factor
+#'  that will be contrasted. Should match one of the factors in DESeq2 design
+#'  (e.g. Region_Diet)
+#'@param combinations Either NA (default) or a list with each element 2 strings
+#'(e.g. "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI")
+#'@param use_IHW_filtering Logical. Inherits from larger function. If \code{TRUE}
+#'it will use a call to \code{IHW::ihw()} when making results.
+#'
+#'@return Returns a named list with each element the results object output from
+#'call to \code{DESeq2::results()}
+#'
+
+
+
+.calculate_DESEQ_results <-
+  function(dds_object,
+           contrast_factor,  #Name of column containing treatments to contrast
+           combinations = NA, #If NA, uses make_pairwise_combinations()
+           alpha = 0.05,
+           use_IHW_filtering){
+
+    cf <- rlang::enquo(contrast_factor)
+
+    #make combinations if not already provided by user
+    if(is.na(combinations)){
+      combinations <-
+        make_pairwise_combinations(SummarizedExperiment::colData(dds_object),
+                                   contrast_factor = rlang::as_label(cf) )
+
+    }
+
+
+    #function to iterate each of the pairwise combinations over
+    .f_make_results <-
+      function(x){
+        contrast_numerator <- x[1]
+        contrast_denominator <- x[2]
+        contrast_factor_string <- rlang::as_label(cf)
+        a <- alpha
+
+        if (use_IHW_filtering == TRUE) {
+          f_IHW <- function(results_object, alpha) {IHW::ihw(results_object, alpha = alpha)}
+        }  else {
+          f_IHW <- function(results_object){results_object}
+        }
+
+
+        res <- DESeq2::results(dds_object,
+                               contrast = c(contrast_factor_string,
+                                            contrast_numerator,
+                                            contrast_denominator),
+                               alpha = a) %>%   f_IHW(alpha = a)
+
+        message(crayon::green(paste("\n\n",res@elementMetadata$description[2])))
+
+        DESeq2::summary(res, alpha = a)
+        return(res)
+      }
+
+    #run with output to a list
+    # res_out <-
+    #   pbapply::pblapply(combinations, #iterate over all combinations
+    #                     .f_make_results #using this internal function
+    #   )
+    res_out <-
+      purrr::map(combinations, #iterate over all combinations
+                        .f_make_results #using this internal function
+      )
+
+    #set names of the res_out list
+    res_out <- setNames(res_out,
+                        lapply(combinations,
+                               function(x) {paste(x, collapse = " vs ")})
+    )
+
+
+    #res_out is a list of all res objects for each comparison, named.
+    return(res_out)
+  }
+
+
 #'Title
 #'
 #'\code{words_to_look_like_code} short description
@@ -201,6 +294,7 @@ make_pairwise_combinations <-
 #'long description
 #'
 #'@param data dataframe.
+#'@return
+#'
 #'
 #'@export
-

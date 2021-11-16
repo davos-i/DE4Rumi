@@ -26,9 +26,20 @@ usethis::use_package("tibble")
 usethis::use_package("crayon")
 usethis::use_package("gprofiler2")
 usethis::use_package("pbapply")
+usethis::use_package("DESeq2")
+usethis::use_package("rlang")
+usethis::use_package("IHW")
+usethis::use_package("S4Vectors")
+usethis::use_package("SummarizedExperiment")
+
 
 #uses .data from rlang
 usethis::use_import_from("rlang", ".data")
+usethis::use_import_from("S4Vectors", "mcols<-")
+usethis::use_import_from("S4Vectors", "metadata")
+usethis::use_import_from("S4Vectors", "metadata<-")
+
+#usethis::use_import_from("rlang", "ensym")
 
 
 #It's handy to have raw data that is compiled to a .RData format for formal use
@@ -52,6 +63,7 @@ usethis::use_pipe()
 #' long description
 #'
 #' @param data dataframe.
+#' @return returns a value of...
 #'
 #' @export
 

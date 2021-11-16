@@ -17,4 +17,7 @@ Imports:
     magrittr,
     tibble,
     IHW,
-    rlang
+    rlang,
+    DESeq2,
+    S4Vectors,
+    SummarizedExperiment

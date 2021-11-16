@@ -4,7 +4,7 @@
 \alias{check_count_matrix}
 \title{Check formatting of supplied count matrix}
 \usage{
-check_count_matrix(count_data, colData, column_with_col_names = rownames)
+check_count_matrix(count_data, colData, column_with_col_names = sample_names)
 }
 \arguments{
 \item{count_data}{Dataframe of counts data to check.}
