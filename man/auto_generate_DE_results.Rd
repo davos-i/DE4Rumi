@@ -67,7 +67,7 @@ and p value histograms).
 }
 \description{
 Wrapper to DESeq2 that is designed to be used iteratively for each element of
-\code {top_level_filter} e.g. for each Tissue Region separately.
+\code{top_level_filter} e.g. for each Tissue Region separately.
 }
 \details{
 This wrapper uses a call to \code{.calculate_DESEQ_results} which determines

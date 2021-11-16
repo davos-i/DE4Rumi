@@ -1,7 +1,7 @@
 #' Auto Generate DE Results
 #'
 #' Wrapper to DESeq2 that is designed to be used iteratively for each element of
-#' \code {top_level_filter} e.g. for each Tissue Region separately.
+#' \code{top_level_filter} e.g. for each Tissue Region separately.
 #'
 #' This wrapper uses a call to \code{.calculate_DESEQ_results} which determines
 #' all possible pairwise comparisons, based on the \code{top_level_name}
@@ -18,7 +18,7 @@
 #' @param top_level_name non-string. Name of \code{colData} column with top
 #'   level factor, which is normally Tissue Region. Defaults to \code{Region}.
 #' @param column_of_samples non-string. Name of \code{colData} column with
-#'   sample names.
+#'   sample names (used for filtering).
 #' @param samples_to_remove string/s. Names of samples to remove e.g.
 #'   \code{c("ARC_01_HCP-HP-RMEI", "ARC_02_HCP-HP-UMEI")}
 #' @param rowSums_filter numeric. For intial filter of rowSums across whole dds.
@@ -49,7 +49,7 @@
 
 auto_generate_DE_results <-
 
-function(top_level_filter, #from lapply e.g. c("ARC", "LAT"), 1 at a time
+function(top_level_filter,
          se_data,
          top_level_name = Region,
          column_of_samples,
@@ -128,7 +128,7 @@ function(top_level_filter, #from lapply e.g. c("ARC", "LAT"), 1 at a time
   #Check cooks distance boxplot to see if any gene is higher on average
   #boxplot(log10(assays(dds_wald)[["cooks"]]), range=0, las=2)
 
-  boxplot_cooks_distance  <<- log10(SummarizedExperiment::assays(dds_wald)[["cooks"]]) %>%
+  boxplot_cooks_distance  <- log10(SummarizedExperiment::assays(dds_wald)[["cooks"]]) %>%
     as.data.frame() %>%
     tibble::rownames_to_column("ensembl") %>%
     tidyr::pivot_longer(where(is.numeric), values_to = "cooks_distance") %>%
@@ -177,7 +177,7 @@ function(top_level_filter, #from lapply e.g. c("ARC", "LAT"), 1 at a time
 
   #iterates over all results objects to make pvalue histograms (consider update with )
   message(crayon::blue("Plotting p value histograms (for QC)..."))
-  pvalue_histogram_pairwise_plots <<-
+  pvalue_histogram_pairwise_plots <-
     purrr::map2(.x = list_results, .y = names(list_results),
                 function(x,names){
                   hist(x$pvalue[x$baseMean > 1],

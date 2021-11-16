@@ -31,6 +31,7 @@ usethis::use_package("rlang")
 usethis::use_package("IHW")
 usethis::use_package("S4Vectors")
 usethis::use_package("SummarizedExperiment")
+usethis::use_package("stringr")
 
 
 #uses .data from rlang

@@ -37,7 +37,8 @@ library(SummarizedExperiment)
 ```{r}
 
 #import data about columns, that is each column should be metadata about the sample/animal. Particularly include all treatment info and animal ID in columns. 
-coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_20201105.csv")
+coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_20201105.csv") %>% 
+  dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
 
 ```
@@ -47,92 +48,58 @@ coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_2
 
 # 2. import all count tables and join
 ```{r matrix_input, echo=T}
-#read in count table - hypothalamus
-
-cts_hypo_liv <- data.table::fread("../Sheep_RNAseq/Inputs/featureCounts_hypothalamus-liver.txt", header = T)
-
-colnames(cts_hypo_liv)[1] <- "gene_ensembl"
-
-#rename incorrect entries:
-cts_hypo_liv <- cts_hypo_liv %>% 
-  dplyr::rename("VMH_21_HCP-HP-UMEI" = "VMH_21_HCP-HP-RMEI", 
-                "VMH_02_HCP-LP-UMEI" = "VMH_02_LCP-LP-UMEI")
 
 
-#rename LAT to LHA
-colnames(cts_hypo_liv) <- stringr::str_replace_all(string = names(cts_hypo_liv), pattern = "LAT", replacement = "LHA")
-
-
-#read in count table - GIT & ST
-cts_git_st <- data.table::fread("../Sheep_RNAseq/Inputs/featureCounts_matrix_DUO_RUM_ST_20200901.tabular")
-
-colnames(cts_git_st)[1] <- "gene_ensembl"
-
-#Join cts together
-
-cts_all <- dplyr::full_join(cts_hypo_liv, cts_git_st)
-
+cts_all <- data.table::fread(file= "./cts_renamed_all_Sheep.txt")
 
 ###### ************
 # Use new function
 cts_filtered <- DE4Rumi::check_count_matrix(count_data = cts_all, 
                             colData = coldata,
-                            column_with_col_names = rowname
+                            column_with_col_names = sample_names
                             )
-rm(cts_all, cts_git_st, cts_hypo_liv)
+rm(cts_all)
 ```
-
-
-```{r}
-
-
-
-#set cts with rownames for dds creation                                     
-#cts0 <- cts_filtered %>% tibble::column_to_rownames(var = "gene_ensembl") %>% as.data.frame()
-
-#coldata1 <- coldata %>%  column_to_rownames(var = "rowname0")
-```
-
 
 
 
 # 3. convert ensemble ID to gene ID
 
 ```{r}
-# library(gprofiler2)
-# #this connects to the online server for gProfiler - so takes some time
-# converted0 <- gprofiler2::gconvert(query = cts_all$gene_ensembl,
-#          organism = "oaries",
-#          target = "ENSG", # or ENSG | AFFY_BOVINE
-#          filter_na = T,
-#          mthreshold = 1)
-# 
-# converted_genes <- converted0 %>% dplyr::select(input, name, description)
-# 
-# cts_a <- left_join(cts_all,converted_genes, by = c("gene_ensembl" = "input"))
-# 
-# ### important - this produces duplicate gene names from annotation - however gene_ensembl remain unique
-# 
-# paste("duplicate genes in annotation: ",nrow(cts_a[duplicated(cts_a$name),]))
-
 
 test_annot <- DE4Rumi::annotate_gene_ensembl(cts_filtered, organism = "oaries")
 ```
 
+
+# Prepare data
+```{r}
+
+
+test_data <-
+  SummarizedExperiment::SummarizedExperiment(assays = cts_filtered %>% tibble::column_to_rownames(var = "gene_ensembl") %>% as.matrix(),
+                                             rowData = test_annot, 
+                                             colData = coldata)
+```
+
+
+
 #4. Generate DE results
 ```{r}
+
 DE_out <- auto_generate_DE_results(top_level_filter = "ARC", 
                  se_data = test_data,
                  top_level_name = Region,
-                 column_of_samples = rowname,
+                 column_of_samples = sample_names,
                  DESeq2_formula_design = ~Region_Diet,
                  rowSums_filter = 10,
                  results_contrast_factor = Region_Diet,
                  results_combinations = NA,
                  use_IHW_filtering = TRUE,
                  alpha = 0.05,
-                 samples_to_remove = NA #c("ARC_01_HCP-HP-RMEI", "ARC_02_HCP-HP-UMEI", "ARC_03_HCP-LP-UMEI")
+                 samples_to_remove = NA 
                  )
+
+
 ```
 
 
@@ -141,7 +108,7 @@ DE_out <- auto_generate_DE_results(top_level_filter = "ARC",
 ############################################################################# #
 #Method to access lowest level of list, in this case Pvalue_histograms.
 #make a function for this
-fake_output <- list(LHA_DESeq2_Output = output$ARC_DESeq2_Output, ARC_DESeq2_Output = output$ARC_DESeq2_Output )
+fake_output <- list(LHA_DESeq2_Output = DE_out$ARC_DESeq2_Output, ARC_DESeq2_Output = DE_out$ARC_DESeq2_Output )
 
 
 test<- fake_output %>% 
@@ -152,6 +119,13 @@ test2 <- test %>%
   unlist(recursive = FALSE) %>% 
   {.[grepl("Pvalue_histogram", names(.))]}
 
+
+test3 <- test %>% 
+  unlist(recursive = FALSE) %>% 
+  {.[grepl("MA_plots", names(.))]}
+
+
+
 test2 %>% 
   purrr::map(function(x){
   plot.new()
@@ -160,132 +134,30 @@ test2 %>%
 ############################################################################# #
 
 
+fake_output <- list(LHA_DESeq2_Output = DE_out$ARC_DESeq2_Output, ARC_DESeq2_Output = DE_out$ARC_DESeq2_Output )
+
+test <- fake_output %>% 
+  unlist(recursive = FALSE)
+test$LHA_DESeq2_Output.DESeq2_res_object$
+
 ```
 
 
 # 4. Function combined DESEQ2 
-
+Old code used calls to teh dds object, not the dds_wald object, which is produced after call to DESeq()
+However, tests show dds and dds_wald have exact same output
 ```{r}
+
+norm_out <- .norm_and_plot(dds_object = DE_out$ARC_DESeq2_Output$dds_wald_object,
+               gene_annotations = test_annot,
+               export_tables = FALSE,
+               top_level_filter = Region)
+
+norm_out #need to add names to list output!!
 
 
 #function for normalisation and plotting - to use internally within each deseq run for each region
 
-.norm_and_plot <- function(dds){
-
-
-################################################################################## #
-#normalised expression
-
-#calculate normalised expression
-vsd <- vst(dds, blind=FALSE) 
-vsd_a <- 
-  assay(vsd) %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "ensembl") %>% 
-  left_join(converted_genes, by = c("ensembl" = "input")) 
-
-################################################################################## #
-#log 2 normalisation
-
-dds <- estimateSizeFactors(dds) #this is the 'factor' that it normalises by below
-
-
-log2norm <- normTransform(object = dds, 
-                          f = log2,#log2 transformation
-                          pc = 1) #pseudocount
-
-# Annotate
-log2norm_a <- 
-  assay(log2norm) %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "ensembl") %>% 
-  left_join(converted_genes, by = c("ensembl" = "input")) 
-
-
-################################################################################## #
-#this was to fix incorrect names used throughout... shouldn't need
-new_coldata <- coldata1 %>% 
-  rownames_to_column("rowname0") %>% 
-    filter(Region %in% region) %>% 
-    mutate(rowname2 = str_c(Region, "_", ID, "__", Diet))
-
-#organise data for export
-vsd_new_names <- vsd_a %>%  
-  dplyr::select(ensembl, name, description, new_coldata$rowname0)  #order columns in same order
-#rename columns with new treatment names included
-names(vsd_new_names) <- c("ensembl","name", "description", new_coldata$rowname2) 
-
-
-log2norm_new_names <- log2norm_a %>%  select(ensembl, name, description, new_coldata$rowname0)  #order columns in same order
-names(log2norm_new_names) <- c("ensembl","name", "description", new_coldata$rowname2) #rename columns with new treatment names included
-head(log2norm_new_names)
-
-
-################################################################################## #
-#export tables of VST and log2 normalised data, plus the full list of DE output
-if(export_tables == TRUE){
-fwrite(vsd_new_names , 
-       file = paste0("./outputs/normalised_counts/",region,"_VST_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"),".csv"), row.names = F)
-
-fwrite(log2norm_new_names, 
-       file = paste0("./outputs/normalised_counts/",region,"_log2_of_DESEQ_internal_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"), ".txt"), row.names = F)
-
-fwrite(full_dataset_DE,
-       file = paste0("./outputs/",region,"_DE_output_", format(Sys.time(), "%Y%m%d_%H%M"), ".txt"))
-}
-
-
-################################################################################## #
-#Create PCA plot 
-pcaData <- plotPCA(vsd, intgroup=c("Diet"), returnData=TRUE, ntop = 500)
-percentVar <- round(100 * attr(pcaData, "percentVar"))
-PCA_plot <- ggplot(pcaData, aes(PC1, PC2, fill=Diet)) +
-  geom_point(size=4.2, shape = 21, colour = "black", alpha = 0.8) +
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-  coord_fixed()+
-  #coord_fixed(xlim = c(-150,150), ylim = c(-120, 120)) +
-  theme_classic()+
-  geom_text(aes(label=name))+
-  ggtitle(label = paste(region))
-
-
-################################################################################## #
-#Heatmap #************** Update with sample distances pre-calculated with dist(t(assay(vsd))) - see vignette
-topVarGenes <- head( order( rowVars( assay(vsd) ), decreasing=TRUE ), 500 )
-
-heatmap_input <- assay(vsd)[ topVarGenes, ]
-  
-heatmap_plot<- pheatmap(heatmap_input, 
-         scale = "row",
-         #cutree_cols = 5,
-         #cutree_rows = 4,
-         clustering_method = "complete",
-         #kmeans_k = 50,
-         #annotation_row = 
-         main = paste(region))
-
-
-
-################################################################################## #
-#OUTPUTS - to lists already generated
-
-
-
-
-#put plots into a list, append to the list (from global environment) but named
-#plots of overall data
-plots <- list( heatmap = heatmap_plot, PCA = print(PCA_plot), cooks_distance = boxplot_cooks_distance)
-
-Plot_out_list <- c(Plot_out_list, setNames(list(plots), paste0(region, "_plots")))
-
-
-
-#put data into a list, append to the list (from global environment) but named
-data_out <-  list(vsd = vsd_new_names, log2norm = log2norm_new_names, DE_out = full_dataset_DE)
-
-Norm_and_DESEQ_out_list <- c(Norm_and_DESEQ_out_list, setNames(list(data_out), paste0(region, "_data")))
-}
 ```
 
 
@@ -320,6 +192,52 @@ full_dataset_DE <- plyr::ldply(pairwise_contrasts$df_pairwise_name,
                         )
 
 
+```
+# Code for renaming old cts tables
+```{r}
+#read in count table - hypothalamus
+
+cts_hypo_liv <- data.table::fread("../Sheep_RNAseq/Inputs/featureCounts_hypothalamus-liver.txt", header = T)
+
+colnames(cts_hypo_liv)[1] <- "gene_ensembl"
+
+#rename incorrect entries:
+cts_hypo_liv <- cts_hypo_liv %>% 
+  dplyr::rename("VMH_21_HCP-HP-UMEI" = "VMH_21_HCP-HP-RMEI", 
+                "VMH_02_HCP-LP-UMEI" = "VMH_02_LCP-LP-UMEI")
+
+
+#rename LAT to LHA
+colnames(cts_hypo_liv) <- stringr::str_replace_all(string = names(cts_hypo_liv), pattern = "LAT", replacement = "LHA")
+
+#find actual sample names from table
+selection <- match(colnames(cts_hypo_liv)[-1], coldata[["rowname"]] ) %>% purrr::discard(is.na)
+
+new_names <- coldata[selection,]$sample_names
+colnames(cts_hypo_liv)[-1] <- new_names
+
+selection <- match(colnames(cts_hypo_liv)[-1], coldata[["rowname"]] ) %>% purrr::discard(is.na)
+all((temp1[["rowname"]]== colnames(cts_hypo_liv)[-1] ))
+
+
+#read in count table - GIT & ST
+cts_git_st <- data.table::fread("../Sheep_RNAseq/Inputs/featureCounts_matrix_DUO_RUM_ST_20200901.tabular") %>% 
+  dplyr::select(!contains("ST"))
+
+colnames(cts_git_st)[1] <- "gene_ensembl"
+
+
+selection <- match(colnames(cts_git_st)[-1], coldata[["rowname"]] ) %>% purrr::discard(is.na)
+temp1 <- coldata[selection,]
+all(temp1[["rowname"]] == colnames(cts_git_st)[-1] )
+
+new_names <- temp1$sample_names
+colnames(cts_git_st)[-1] <- new_names
+#Join cts together
+
+cts_all <- dplyr::full_join(cts_hypo_liv, cts_git_st)
+
+colnames(cts_all)
 ```
 
 #testing

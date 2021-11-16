@@ -27,81 +27,85 @@
 #'
 #' @export
 
-check_count_matrix <- function(count_data,
-                               colData,
-                               column_with_col_names = sample_names) {
-  #check column names match metadata
-  #select column names (not include gene_ensembl column)
-  count_data_names <- count_data %>%
-    dplyr::select(-.data$gene_ensembl) %>%
-    colnames()
-
-  colData_names <- colData %>%
-    dplyr::select({{ column_with_col_names }}) %>%
-    magrittr::extract2(ensym(column_with_col_names))
+check_count_matrix <-
+  function(count_data,
+           colData,
+           column_with_col_names = sample_names) {
 
 
-  #1 do names ALL match (not necessarily in order)
-  names_logical <- all(count_data_names %in% colData_names)
+    column_as_string <- rlang::enquo(column_with_col_names) %>% rlang::as_label()
+    #check column names match metadata
+    #select column names (not include gene_ensembl column)
+    count_data_names <- count_data %>%
+      dplyr::select(-.data$gene_ensembl) %>%
+      colnames()
 
-  if(names_logical == TRUE){
-    message(crayon::black$bgGreen$bold("PASS: All columns in count_data have matching data in colData"))
-  } else if(names_logical == FALSE){
-    #2 if not, which ones are missing
-     message("FAIL: Not all columns in count_data have matching data in colData")
-    message("Missing samples:")
-    print(count_data_names[which(!(count_data_names %in% colData_names))])
-    message("Function will now output count_data without these columns!!")
-  }
+    colData_names <- colData %>%
+      dplyr::select({{ column_with_col_names }}) %>%
+      magrittr::extract2(column_as_string)
 
-  #re-order count matrix columns to match coldata
-  #(and only select columns with data)
-  count_data_out <- count_data %>%
-    dplyr::select(.data$gene_ensembl, colData_names)
 
-  #check there is no rownames
-  if (tibble::has_rownames(count_data) == TRUE) {
-    message(
-      paste(
-        "FAIL: Rownames detected but should not be used.",
-        "Use tibble::rownames_to_column('gene_ensemble') to correct dataframe."
+    #1 do names ALL match (not necessarily in order)
+    names_logical <- all(count_data_names %in% colData_names)
+
+    if(names_logical == TRUE){
+      message(crayon::black$bgGreen$bold("PASS: All columns in count_data have matching data in colData"))
+    } else if(names_logical == FALSE){
+      #2 if not, which ones are missing
+      message("FAIL: Not all columns in count_data have matching data in colData")
+      message("Missing samples:")
+      print(count_data_names[which(!(count_data_names %in% colData_names))])
+      message("Function will now output count_data without these columns!!")
+    }
+
+    #re-order count matrix columns to match coldata
+    #(and only select columns with data)
+    count_data_out <- count_data %>%
+      dplyr::select(.data$gene_ensembl, colData_names)
+
+    #check there is no rownames
+    if (tibble::has_rownames(count_data) == TRUE) {
+      message(
+        paste(
+          "FAIL: Rownames detected but should not be used.",
+          "Use tibble::rownames_to_column('gene_ensemble') to correct dataframe."
+        )
       )
-    )
-  } else {
-    message(crayon::black$bgGreen$bold("PASS: Rownames not detected"))
-  }
+    } else {
+      message(crayon::black$bgGreen$bold("PASS: Rownames not detected"))
+    }
 
-  #Check if first column name is "gene_ensembl"
-  col_name_first_col <- colnames(count_data)[1]
-  if (col_name_first_col == "gene_ensembl") {
-    message(crayon::black$bgGreen$bold("PASS: First column name is 'gene_ensembl'"))
-  } else {
-    message(
-      paste0(
-        "FAIL: First column name is '",
-        col_name_first_col,
-        "' Should be 'gene_ensembl'"
+    #Check if first column name is "gene_ensembl"
+    col_name_first_col <- colnames(count_data)[1]
+    if (col_name_first_col == "gene_ensembl") {
+      message(crayon::black$bgGreen$bold("PASS: First column name is 'gene_ensembl'"))
+    } else {
+      message(
+        paste0(
+          "FAIL: First column name is '",
+          col_name_first_col,
+          "' Should be 'gene_ensembl'"
+        )
       )
-    )
-  }
+    }
 
-  #output dimensions
-  message(crayon::green("\n Dimensions of raw counts dataset BEFORE sorting:"))
-  message(crayon::green(paste(
-    "genes: ", dim(count_data)[1],
-    "    samples: ", dim(count_data)[2] - 1)
+    #output dimensions
+    message(crayon::green("\n Dimensions of raw counts dataset BEFORE sorting:"))
+    message(crayon::green(paste(
+      "genes: ", dim(count_data)[1],
+      "    samples: ", dim(count_data)[2] - 1)
     ))
 
-  message(crayon::blue(paste("\n Number of samples in colData:"),
-                       length(colData_names)))
+    message(crayon::blue(paste("\n Number of samples in colData:"),
+                         length(colData_names)))
 
-  message(crayon::green("\n Dimensions of raw counts dataset AFTER sorting:"))
-  message(crayon::green(paste(
-    "genes: ", dim(count_data_out)[1],
-    "    samples: ", dim(count_data_out)[2] - 1)
-  ))
-return(count_data_out)
-}
+    message(crayon::green("\n Dimensions of raw counts dataset AFTER sorting:"))
+    message(crayon::green(paste(
+      "genes: ", dim(count_data_out)[1],
+      "    samples: ", dim(count_data_out)[2] - 1)
+    ))
+    return(count_data_out)
+  }
 
 
 
