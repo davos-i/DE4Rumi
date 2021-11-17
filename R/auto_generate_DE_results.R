@@ -16,7 +16,7 @@
 #'   \code{lapply()}.
 #' @param se_data SummarizedExperiment object of experimental data.
 #' @param top_level_name non-string. Name of \code{colData} column with top
-#'   level factor, which is normally Tissue Region. Defaults to \code{Region}.
+#'   level factor, which is normally Tissue Region.
 #' @param column_of_samples non-string. Name of \code{colData} column with
 #'   sample names (used for filtering).
 #' @param samples_to_remove string/s. Names of samples to remove e.g.
@@ -26,12 +26,11 @@
 #'   samples. Saves computing time, but does not change DESeq results as it
 #'   filters internally as well. Defaults to 10.
 #' @param DESeq2_formula_design = formula in form \code{~Factor} parsed to
-#'   \code{DESeq()}. Defaults to \code{~Region_Diet}.
+#'   \code{DESeq()}.
 #' @param results_contrast_factor Name of Factor from
 #'   \code{DESeq2_formula_design} that is used to generate pairwise comparisons.
-#'   Defaults to \code{Region_Diet}
 #' @param results_combinations Either \code{NA}, which will automatically
-#'   generate all possible pairwise combinatiosn of the
+#'   generate all possible pairwise combinatios of the
 #'   \code{results_contrast_factor} OR a list of pairwise comparisons with each
 #'   element containing 2 strings, numerator and denominator, respectively. See
 #'   \code{?DESeq2::results} for requirements. Defaults to \code{NA}.
@@ -41,6 +40,13 @@
 #' @param alpha numeric. What is the p-value threshold to be used for
 #'   determining significance. Used in call to \code{DESeq2::results()} and
 #'   others.
+#' @param gene_annotations Output from call to \code{annotate_gene_ensembl()}
+#' @param export_tables logical. \code{TRUE} indicates the normalised counts
+#'   tables, both vsd and log2norm, annotated with gene names and descriptions,
+#'   are exported to \code{"./outputs/normalised_counts/"}
+#' @param export_dir string. "./" indicates relative to working directory. IF
+#'   this directory doesn't exist, it will be created.
+#'
 #' @return returns a named, nested list (list of lists) with dds_wald_object,
 #'   list of DESeq result objects and list of pairwise plots (contains MA plots
 #'   and p value histograms).
@@ -51,15 +57,18 @@ auto_generate_DE_results <-
 
 function(top_level_filter,
          se_data,
-         top_level_name = Region,
+         top_level_name ,
          column_of_samples,
          samples_to_remove = NA,
-         DESeq2_formula_design = ~Region_Diet,
+         DESeq2_formula_design ,
          rowSums_filter = 10, #for dds filtering
-         results_contrast_factor = Region_Diet,
+         results_contrast_factor,
          results_combinations = NA,
          use_IHW_filtering = TRUE,
-         alpha = 0.05
+         alpha = 0.05,
+         gene_annotations,
+         export_tables = FALSE,
+         export_dir = "./outputs/normalised_counts/"
 ){
 
 
@@ -68,13 +77,18 @@ function(top_level_filter,
     stop("se_data is not of class 'SummarizedExperiment'")
   }
 
-  #### 1. subset data
-
-
-  #rename column names as strings for subsetting with []
+  #Helpers
   top_level_name_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
   column_of_samples_string <- rlang::enquo(column_of_samples) %>% rlang::as_label()
+  cf <- rlang::enquo(results_contrast_factor)
+  a <- alpha
 
+  #### 1. subset data
+
+message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
+                                        top_level_filter,
+                                        "******************* \n\n")))
+  #rename column names as strings for subsetting with []
 
   #subset out top_level_name (e.g. Region)
   se_data0 <-
@@ -132,7 +146,7 @@ function(top_level_filter,
     as.data.frame() %>%
     tibble::rownames_to_column("ensembl") %>%
     tidyr::pivot_longer(where(is.numeric), values_to = "cooks_distance") %>%
-    ggplot2::ggplot(mapping = ggplot2::aes(x = cooks_distance, y = name))+
+    ggplot2::ggplot(mapping = ggplot2::aes(x = .data$cooks_distance, y = .data$name))+
     ggplot2::geom_boxplot()+
     ggplot2::theme_classic()
   message(crayon::blue("Cooks distance plot complete."))
@@ -144,9 +158,7 @@ function(top_level_filter,
 
   message(crayon::blue("Generating pairwise DESeq2 results..."))
 
-  cf <- rlang::enquo(results_contrast_factor)
 
-  a <- alpha
 
   res_out <-   .calculate_DESEQ_results(dds_object = dds_wald,
                                         contrast_factor = !!cf,
@@ -169,7 +181,7 @@ function(top_level_filter,
                 function(x,names){
                   plot_title = paste(top_level_filter, names)
                   DESeq2::plotMA(x, main = plot_title)
-                  MA_plot <- recordPlot()
+                  MA_plot <- grDevices::recordPlot()
                 })
   message(crayon::blue("Finished MA plots."))
   ################################################################################## #
@@ -180,25 +192,50 @@ function(top_level_filter,
   pvalue_histogram_pairwise_plots <-
     purrr::map2(.x = list_results, .y = names(list_results),
                 function(x,names){
-                  hist(x$pvalue[x$baseMean > 1],
+                  graphics::hist(x$pvalue[x$baseMean > 1],
                        breaks = 0:20/20,
                        col = "grey50",
                        border = "white",
                        main = paste("p values (with baseMean > 1) of ", names))
-                  pvalue_histogram <- recordPlot()
+                  pvalue_histogram <- grDevices::recordPlot()
                 })
   message(crayon::blue("Finished plotting p value histograms."))
+
+
   ################################################################################## #
-  #OUTPUT
+  # Generate normalised counts tables, and plots of overall dataset
+
+  norm_out <- .norm_and_plot(top_level_filter,
+                             dds_object = dds_wald,
+                             gene_annotations,
+                             export_tables,
+                             results_contrast_factor = !!cf)
+  #accesses two separate parts of output, which already contain the region name in them so are unique
+  overall_plots_list <- norm_out[grepl("overall_plots", names(norm_out))][[1]]
+  normalised_data_list <- norm_out[grepl("normalised_data", names(norm_out))][[1]]
+
+  ################################################################################## #
+  #OUTPUT - results
   # Prepare data for export
   #add's plots into 1 named list for export
   message(crayon::blue("Preparing data for output..."))
   pairwise_plots0 <- list(MA_plots = MA_pairwise_plots, Pvalue_histogram = pvalue_histogram_pairwise_plots)
 
-  list_out <- list(dds_wald_object = dds_wald, DESeq2_res_object = res_out, pairwise_plots = pairwise_plots0)
+  list_out <- list(dds_wald_object = dds_wald,
+                   DESeq2_res_object = res_out,
+                   pairwise_plots = pairwise_plots0,
+                   overall_plots = overall_plots_list,
+                   normalised_data = normalised_data_list)
 
   #Add to a list with it's own name identifying it by top_level_filter (region)
-  list_out <- setNames(list(list_out), paste0(top_level_filter, "_DESeq2_Output"))
+  list_out <- stats::setNames(list(list_out), paste0(top_level_filter, "_DESeq2_Output"))
   message(crayon::red("List output succesfully generated. Contains: dds_wald_object [dds after call to DESeq()], list of DESeq result objects and list of pairwise plots."))
+
+
+  message(crayon::black$bgCyan$bold(paste("\n\n ******************* END of - ",
+                                          top_level_filter,
+                                          "******************* \n\n")))
+
+
   return(list_out)
 }

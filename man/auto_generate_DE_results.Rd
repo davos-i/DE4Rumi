@@ -7,15 +7,18 @@
 auto_generate_DE_results(
   top_level_filter,
   se_data,
-  top_level_name = Region,
+  top_level_name,
   column_of_samples,
   samples_to_remove = NA,
-  DESeq2_formula_design = ~Region_Diet,
+  DESeq2_formula_design,
   rowSums_filter = 10,
-  results_contrast_factor = Region_Diet,
+  results_contrast_factor,
   results_combinations = NA,
   use_IHW_filtering = TRUE,
-  alpha = 0.05
+  alpha = 0.05,
+  gene_annotations,
+  export_tables = FALSE,
+  export_dir = "./outputs/normalised_counts/"
 )
 }
 \arguments{
@@ -26,16 +29,16 @@ to be iterated over. Usually this is provided by a call to \code{map()} or
 \item{se_data}{SummarizedExperiment object of experimental data.}
 
 \item{top_level_name}{non-string. Name of \code{colData} column with top
-level factor, which is normally Tissue Region. Defaults to \code{Region}.}
+level factor, which is normally Tissue Region.}
 
 \item{column_of_samples}{non-string. Name of \code{colData} column with
-sample names.}
+sample names (used for filtering).}
 
 \item{samples_to_remove}{string/s. Names of samples to remove e.g.
 \code{c("ARC_01_HCP-HP-RMEI", "ARC_02_HCP-HP-UMEI")}}
 
 \item{DESeq2_formula_design}{= formula in form \code{~Factor} parsed to
-\code{DESeq()}. Defaults to \code{~Region_Diet}.}
+\code{DESeq()}.}
 
 \item{rowSums_filter}{numeric. For intial filter of rowSums across whole dds.
 Filters out all samples that have basically 0 expression across all
@@ -43,11 +46,10 @@ samples. Saves computing time, but does not change DESeq results as it
 filters internally as well. Defaults to 10.}
 
 \item{results_contrast_factor}{Name of Factor from
-\code{DESeq2_formula_design} that is used to generate pairwise comparisons.
-Defaults to \code{Region_Diet}}
+\code{DESeq2_formula_design} that is used to generate pairwise comparisons.}
 
 \item{results_combinations}{Either \code{NA}, which will automatically
-generate all possible pairwise combinatiosn of the
+generate all possible pairwise combinatios of the
 \code{results_contrast_factor} OR a list of pairwise comparisons with each
 element containing 2 strings, numerator and denominator, respectively. See
 \code{?DESeq2::results} for requirements. Defaults to \code{NA}.}
@@ -59,6 +61,15 @@ used when calculating results? \code{TRUE}, the default, indicates yes. See
 \item{alpha}{numeric. What is the p-value threshold to be used for
 determining significance. Used in call to \code{DESeq2::results()} and
 others.}
+
+\item{gene_annotations}{Output from call to \code{annotate_gene_ensembl()}}
+
+\item{export_tables}{logical. \code{TRUE} indicates the normalised counts
+tables, both vsd and log2norm, annotated with gene names and descriptions,
+are exported to \code{"./outputs/normalised_counts/"}}
+
+\item{export_dir}{string. "./" indicates relative to working directory. IF
+this directory doesn't exist, it will be created.}
 }
 \value{
 returns a named, nested list (list of lists) with dds_wald_object,

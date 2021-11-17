@@ -1,6 +1,9 @@
 #Helper functions for DESEQ2
 
 
+utils::globalVariables("where")
+
+
 #' Check formatting of supplied count matrix
 #'
 #' \code{check_count_matrix()} returns messages to the console to determine if
@@ -19,8 +22,8 @@
 #'   metadata about the sample/animal. Particularly include all treatment info
 #'   and animal ID in columns.
 #' @param column_with_col_names non-string. Name of the column in \code{colData}
-#'   that matches names of columns in \code{count_data}. Should not include
-#'   \code{ gene_ensembl} column as this is automatically detected.
+#'   that matches names of columns in \code{count_data}. This column hould not
+#'    include and entry called "gene_ensembl", as this is automatically detected.
 #'
 #' @return Returns a dataframe of \code{count_data} with columns ordered to
 #' match names in the \code{column_with _col_names} column of \code{colData}.
@@ -30,7 +33,7 @@
 check_count_matrix <-
   function(count_data,
            colData,
-           column_with_col_names = sample_names) {
+           column_with_col_names) {
 
 
     column_as_string <- rlang::enquo(column_with_col_names) %>% rlang::as_label()
@@ -47,9 +50,17 @@ check_count_matrix <-
 
     #1 do names ALL match (not necessarily in order)
     names_logical <- all(count_data_names %in% colData_names)
+    #1b Do all colData names have a match in the counts data? If not, that's ok but good to list so user knows.
+    colData_names_logical <- all(colData_names %in% count_data_names)
+    colData_missing_names <- colData_names[which(!(colData_names %in% count_data_names))]
 
     if(names_logical == TRUE){
       message(crayon::black$bgGreen$bold("PASS: All columns in count_data have matching data in colData"))
+      if(colData_names_logical == FALSE){
+        message(crayon::red$bold("FAIL: colData has entries in column_with_col_names that do not match a column in count_data. Potentially missing data?"))
+        message(crayon::red(paste("Entries in colData with no matching counts data:", paste(colData_missing_names, collapse = ", "))))
+        stop("Checks terminated. See notes in Console. Run subset_colData() and try again.")
+      }
     } else if(names_logical == FALSE){
       #2 if not, which ones are missing
       message("FAIL: Not all columns in count_data have matching data in colData")
@@ -61,7 +72,7 @@ check_count_matrix <-
     #re-order count matrix columns to match coldata
     #(and only select columns with data)
     count_data_out <- count_data %>%
-      dplyr::select(.data$gene_ensembl, colData_names)
+      dplyr::select(.data$gene_ensembl, tidyselect::any_of(colData_names))
 
     #check there is no rownames
     if (tibble::has_rownames(count_data) == TRUE) {
@@ -109,6 +120,79 @@ check_count_matrix <-
 
 
 
+#' Subset colData automatically
+#'
+#' Run if \code{check_count_matrix()} warns that there are entries in colData
+#' that do not match columns in counts_matrix.
+#'
+#' Matches the entries in the \code{column_with_col_names} in \code{colData} to
+#' the columns of \code{count_data}, and removes them from \code{colData}.
+#'
+#' @param count_data Dataframe of counts data to check.
+#' @param colData Dataframe of column annotation data. each column should be
+#'   metadata about the sample/animal. Particularly include all treatment info
+#'   and animal ID in columns.
+#' @param column_with_col_names non-string. Name of the column in \code{colData}
+#'   that matches names of columns in \code{count_data}.
+#'
+#' @return Returns the filtered dataframe (to be used downstream).
+#'
+#' @export
+
+
+
+subset_colData <-
+function(count_data,
+         colData,
+         column_with_col_names) {
+
+  column_as_string <- rlang::enquo(column_with_col_names) %>% rlang::as_label()
+  #check column names match metadata
+  #select column names (not include gene_ensembl column)
+  count_data_names <- count_data %>%
+    dplyr::select(-.data$gene_ensembl) %>%
+    colnames()
+
+  colData_names <- colData %>%
+    dplyr::select({{ column_with_col_names }}) %>%
+    magrittr::extract2(column_as_string)
+
+
+  #1b Do all colData names have a match in the counts data? If not, that's ok but good to list so user knows.
+  colData_names_logical <- all(colData_names %in% count_data_names)
+  colData_missing_names <- colData_names[which(!(colData_names %in% count_data_names))]
+
+  if(colData_names_logical == TRUE){
+    message(crayon::green(("All entries in colData have matching count_data column. Run full check with check_counts_matrix() function. ")))
+  } else{
+  message(crayon::red(paste("Entries in colData with no matching counts data:",
+                            paste(colData_missing_names, collapse = ", "))))
+    message(crayon::green(paste("Dimensions before filtering: ", paste(dim(colData), collapse = "   "))))
+    colData_out <-
+      colData %>%
+      dplyr::filter({{ column_with_col_names }} %in% count_data_names )
+
+    message(crayon::green(paste("Dimensions after filtering: ", paste(dim(colData_out), collapse = "   "))))
+  }
+
+  return(colData_out)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #'Collects human equivalent gene names and descriptions
 #'
 #'\code{annotate_gene_ensembl} creates a dataframe of human equivalent gene
@@ -138,7 +222,9 @@ annotate_gene_ensembl <- function(data, organism = "oaries") {
 
   converted_genes <-
     converted0 %>%
-    dplyr::select(gene_ensembl = input, gene_name = name, description)
+    dplyr::select(gene_ensembl = .data$input,
+                  gene_name = .data$name,
+                  .data$description)
 
   message(
     crayon::blue(
@@ -167,18 +253,13 @@ annotate_gene_ensembl <- function(data, organism = "oaries") {
 #'
 #'@param coldata either a dataframe or a call to colData() on a DESeqDataSet
 #'@param contrast_factor string. Name of column containing treatments to contrast
-#'@param top_level_column_name non-string.
-#'Name of column containing top level variable. Defaults to: \code{Region}.
-#'@param top_level_filter string. Name of top level (e.g. region) to filter data
-#'with.
+#'
 #'
 #'@export
 #'
 make_pairwise_combinations <-
   function(coldata,
-           contrast_factor#,
-           #top_level_column_name = Region,
-          # top_level_filter
+           contrast_factor
           ){
     unique_contrast_levels <-
       coldata %>%
@@ -215,6 +296,9 @@ make_pairwise_combinations <-
 #'  (e.g. Region_Diet)
 #'@param combinations Either NA (default) or a list with each element 2 strings
 #'(e.g. "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI")
+#'@param alpha numeric. What is the p-value threshold to be used for
+#'   determining significance. Used in call to \code{DESeq2::results()} and
+#'   others.
 #'@param use_IHW_filtering Logical. Inherits from larger function. If \code{TRUE}
 #'it will use a call to \code{IHW::ihw()} when making results.
 #'
@@ -251,17 +335,19 @@ make_pairwise_combinations <-
         a <- alpha
 
         if (use_IHW_filtering == TRUE) {
-          f_IHW <- function(results_object, alpha) {IHW::ihw(results_object, alpha = alpha)}
-        }  else {
-          f_IHW <- function(results_object){results_object}
+          res <- DESeq2::results(dds_object,
+                                 contrast = c(contrast_factor_string,
+                                              contrast_numerator,
+                                              contrast_denominator),
+                                 alpha = a) %>%
+            IHW::ihw(alpha = a)
+          } else {
+          res <- DESeq2::results(dds_object,
+                                 contrast = c(contrast_factor_string,
+                                              contrast_numerator,
+                                              contrast_denominator),
+                                 alpha = a)
         }
-
-
-        res <- DESeq2::results(dds_object,
-                               contrast = c(contrast_factor_string,
-                                            contrast_numerator,
-                                            contrast_denominator),
-                               alpha = a) %>%   f_IHW(alpha = a)
 
         message(crayon::green(paste("\n\n",res@elementMetadata$description[2])))
 
@@ -269,18 +355,14 @@ make_pairwise_combinations <-
         return(res)
       }
 
-    #run with output to a list
-    # res_out <-
-    #   pbapply::pblapply(combinations, #iterate over all combinations
-    #                     .f_make_results #using this internal function
-    #   )
+
     res_out <-
       purrr::map(combinations, #iterate over all combinations
                         .f_make_results #using this internal function
       )
 
     #set names of the res_out list
-    res_out <- setNames(res_out,
+    res_out <- stats::setNames(res_out,
                         lapply(combinations,
                                function(x) {paste(x, collapse = " vs ")})
     )

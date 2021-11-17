@@ -17,27 +17,14 @@ To normalise gene expression across all tissues, the 'DESEQ2 - all tissues - FUL
 
 #Step 1a in pipeline
 
-```{r echo=F, warning = FALSE, message = FALSE}
-library(plyr)
-library(DESeq2)
-library(data.table)
-library(tidyverse)
-library(RColorBrewer)
-library(genefilter)
-library(pheatmap)
-library(gplots)
-library(ggrepel)
-
-
-library(SummarizedExperiment)
-```
-
-
 # 1. Import metadata
 ```{r}
 
 #import data about columns, that is each column should be metadata about the sample/animal. Particularly include all treatment info and animal ID in columns. 
 coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_20201105.csv") %>% 
+  dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
+
+coldata <-  data.table::fread(file = "./coldata_test.csv") %>% 
   dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
 
@@ -47,6 +34,9 @@ coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_2
 
 
 # 2. import all count tables and join
+TODO - make it handle when too many names are in coldata compared to cts_all
+Error: Can't subset columns that don't exist.
+x Columns `BONE_8__Feed`, `BONE_20__Fast`, and `BONE_15__Refeed` don't exist.
 ```{r matrix_input, echo=T}
 
 
@@ -54,11 +44,22 @@ cts_all <- data.table::fread(file= "./cts_renamed_all_Sheep.txt")
 
 ###### ************
 # Use new function
-cts_filtered <- DE4Rumi::check_count_matrix(count_data = cts_all, 
+cts_filtered <- check_count_matrix(count_data = cts_all, 
                             colData = coldata,
                             column_with_col_names = sample_names
                             )
-rm(cts_all)
+
+# filter colData, as suggested by above
+coldata <- subset_colData(count_data = cts_all, 
+                            colData = coldata,
+                            column_with_col_names = sample_names)
+
+#re-run check
+cts_filtered <- check_count_matrix(count_data = cts_all, 
+                            colData = coldata,
+                            column_with_col_names = sample_names
+                            )
+#rm(cts_all)
 ```
 
 
@@ -67,134 +68,70 @@ rm(cts_all)
 
 ```{r}
 
-test_annot <- DE4Rumi::annotate_gene_ensembl(cts_filtered, organism = "oaries")
+test_annot <- annotate_gene_ensembl(cts_filtered, organism = "oaries")
 ```
 
 
 # Prepare data
+TO DO: make a wrapper for this with specific checks of data / auto matrix
 ```{r}
 
-
 test_data <-
-  SummarizedExperiment::SummarizedExperiment(assays = cts_filtered %>% tibble::column_to_rownames(var = "gene_ensembl") %>% as.matrix(),
-                                             rowData = test_annot, 
-                                             colData = coldata)
+  SummarizedExperiment::SummarizedExperiment(
+    assays = cts_filtered %>% 
+      tibble::column_to_rownames(var = "gene_ensembl") %>% 
+      as.matrix(),
+    rowData = test_annot, 
+    colData = coldata)
+
+#subset columns to be every third, to make testing quicker
+test_data <- test_data[,seq(0,ncol(cts_filtered)-1,3)] 
+
+
 ```
 
 
 
 #4. Generate DE results
+TO DO: - detect all options for 'top_level_filter' and parse to map().
+
+fails due to ihw error: Error in mcols(deseq_res) : could not find function "mcols"
 ```{r}
 
-DE_out <- auto_generate_DE_results(top_level_filter = "ARC", 
-                 se_data = test_data,
-                 top_level_name = Region,
-                 column_of_samples = sample_names,
-                 DESeq2_formula_design = ~Region_Diet,
-                 rowSums_filter = 10,
-                 results_contrast_factor = Region_Diet,
-                 results_combinations = NA,
-                 use_IHW_filtering = TRUE,
-                 alpha = 0.05,
-                 samples_to_remove = NA 
-                 )
+DE_out <- 
+  purrr::map(list("LIV","ARC"),
+             auto_generate_DE_results, 
+             se_data = test_data,
+             top_level_name = Region,
+             column_of_samples = sample_names,
+             samples_to_remove = NA,
+             DESeq2_formula_design = ~Region_Diet,
+             rowSums_filter = 10, #for dds filtering
+             results_contrast_factor = Region_Diet,
+             results_combinations = NA,
+             use_IHW_filtering = TRUE,
+             alpha = 0.05,
+             gene_annotations = test_annot,
+             export_tables = TRUE,
+             export_dir = "./outputs/normalised_counts3/")
+
 
 
 ```
 
-
+#5. Accessing results
+TO DO: 
 ```{r}
+#unlist to take away teh unamed, top layer. Gives access via $
+DE_out_test <- DE_out %>% unlist(recursive = FALSE)
 
-############################################################################# #
-#Method to access lowest level of list, in this case Pvalue_histograms.
-#make a function for this
-fake_output <- list(LHA_DESeq2_Output = DE_out$ARC_DESeq2_Output, ARC_DESeq2_Output = DE_out$ARC_DESeq2_Output )
-
-
-test<- fake_output %>% 
-  unlist(recursive = F) %>% 
-  {.[grepl("pairwise_plots", names(.))]}
-
-test2 <- test %>% 
-  unlist(recursive = FALSE) %>% 
-  {.[grepl("Pvalue_histogram", names(.))]}
-
-
-test3 <- test %>% 
-  unlist(recursive = FALSE) %>% 
-  {.[grepl("MA_plots", names(.))]}
-
-
-
-test2 %>% 
-  purrr::map(function(x){
-  plot.new()
-    print(x)
-})
-############################################################################# #
-
-
-fake_output <- list(LHA_DESeq2_Output = DE_out$ARC_DESeq2_Output, ARC_DESeq2_Output = DE_out$ARC_DESeq2_Output )
-
-test <- fake_output %>% 
-  unlist(recursive = FALSE)
-test$LHA_DESeq2_Output.DESeq2_res_object$
-
-```
-
-
-# 4. Function combined DESEQ2 
-Old code used calls to teh dds object, not the dds_wald object, which is produced after call to DESeq()
-However, tests show dds and dds_wald have exact same output
-```{r}
-
-norm_out <- .norm_and_plot(dds_object = DE_out$ARC_DESeq2_Output$dds_wald_object,
-               gene_annotations = test_annot,
-               export_tables = FALSE,
-               top_level_filter = Region)
-
-norm_out #need to add names to list output!!
-
-
-#function for normalisation and plotting - to use internally within each deseq run for each region
-
+#{.[grepl("MA_plots", names(.))]}
 ```
 
 
 
-#Working
-Subset se object before converting dds (as dds should be in function as split by region.)
-
-
-
-a character vector with exactly three elements: the name of a factor in the design formula, the name of the numerator level for the fold change, and the name of the denominator level for the fold change (simplest case)
-```{r}
-
-full_dataset_DE <- plyr::ldply(pairwise_contrasts$df_pairwise_name, 
-                        function(x) {
-                          .pairwise_df <- dplyr::filter(pairwise_contrasts, df_pairwise_name == x)
-                          #the following code could probably use ldply too? as it completes rbind.fill within
-                          df <- do.call("rbind.fill",
-                                        lapply(.pairwise_df$df_pairwise_name,
-                                               function(x)
-                                                 get(x)
-                                                 ))#get's the dataframe by name
-                          
-                          df <- df %>% mutate(import_comparison_id = str_c(region, .pairwise_df$pairwise_short[1], sep = "_"),
-                                              import_region = region,
-                                              pairwise_short = .pairwise_df$pairwise_short[1],
-                                              pairwise_description = .pairwise_df$Long_pairwise_description,
-                                              pairwise_long = str_split(pairwise_description, pattern = " - ", simplify = T)[,1],
-                                              description_short = str_split(description, pattern = "\\[", simplify = T)[,1]
-                                              )
-                          df
-                          }
-                        )
-
-
-```
 # Code for renaming old cts tables
-```{r}
+```{r eval=FALSE, include=FALSE}
 #read in count table - hypothalamus
 
 cts_hypo_liv <- data.table::fread("../Sheep_RNAseq/Inputs/featureCounts_hypothalamus-liver.txt", header = T)
@@ -238,18 +175,5 @@ colnames(cts_git_st)[-1] <- new_names
 cts_all <- dplyr::full_join(cts_hypo_liv, cts_git_st)
 
 colnames(cts_all)
-```
-
-#testing
-```{r}
-
-f_test <- function (res_out, top_level_filter = "ARC"){
-  
-
-}
-
-f_test(output)
-
-
 ```
 

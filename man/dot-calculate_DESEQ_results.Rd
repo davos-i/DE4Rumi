@@ -23,6 +23,10 @@ that will be contrasted. Should match one of the factors in DESeq2 design
 \item{combinations}{Either NA (default) or a list with each element 2 strings
 (e.g. "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI")}
 
+\item{alpha}{numeric. What is the p-value threshold to be used for
+determining significance. Used in call to \code{DESeq2::results()} and
+others.}
+
 \item{use_IHW_filtering}{Logical. Inherits from larger function. If \code{TRUE}
 it will use a call to \code{IHW::ihw()} when making results.}
 }

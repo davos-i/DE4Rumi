@@ -29,13 +29,27 @@ usethis::use_package("pbapply")
 usethis::use_package("DESeq2")
 usethis::use_package("rlang")
 usethis::use_package("IHW")
-usethis::use_package("S4Vectors")
+usethis::use_package("S4Vectors", type = "Depends") #IHW relies on names that aren't defined properly in their package
 usethis::use_package("SummarizedExperiment")
 usethis::use_package("stringr")
 
+usethis::use_package("BiocGenerics")
+usethis::use_package("data.table")
+usethis::use_package("genefilter")
+usethis::use_package("ggplot2")
+usethis::use_package("ggrepel")
+usethis::use_package("pheatmap")
+usethis::use_package("purrr")
+usethis::use_package("tidyr")
+usethis::use_package("tidyselect")
+usethis::use_package("graphics")
+usethis::use_package("grDevices")
 
 #uses .data from rlang
 usethis::use_import_from("rlang", ".data")
+#usethis::use_import_from("tidyselect", "where") #fail
+#have to put utils::globalVariables("where") inside one of the .R files
+usethis::use_import_from("S4Vectors", "mcols")
 usethis::use_import_from("S4Vectors", "mcols<-")
 usethis::use_import_from("S4Vectors", "metadata")
 usethis::use_import_from("S4Vectors", "metadata<-")

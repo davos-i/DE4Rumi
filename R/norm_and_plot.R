@@ -1,9 +1,44 @@
+#' Generate normalised counts and QC plots
+#'
+#' Internal function to use within \code{auto_generate_DE_results()}.
+#'
+#' This function generates normalised count tables, using the variance
+#' stabilizing transformation technique (called "vsd" throughougt - variance
+#' stabilised data), and also using log2 normilisation (log2norm). This function
+#' also generates 3 types of quality control plots for the overall dataset.
+#'
+#' @param top_level_filter inherits from \code{auto_generate_DE_results()}
+#' @param dds_object DESeq2 data object, inherits from
+#'   \code{auto_generate_DE_results()}
+#' @param gene_annotations Output from \code{annotate_gene_ensembl()}
+#' @param export_tables logical. \code{TRUE} indicates the normalised counts
+#'   tables, both vsd and log2norm, annotated with gene names and descriptions,
+#'   are exported to \code{"./outputs/normalised_counts/"})
+#' @param export_dir string. "./" indicates relative to working directory. IF
+#'   this directory doesn't exist, it will be created.
+#' @param results_contrast_factor inherits from
+#'   \code{auto_generate_DE_results()}
+#'
+#'
+#' @return returns a list of 1) heatmap_plot, PCA_plot and Sample distances
+#'   heatmap; and 2) normalised vsd and normalised log2norm dataframes.
+#'
+#' @export
+#'
 
-.norm_and_plot <- function(dds_object,
+#'
+#'
+#'
+#'
+.norm_and_plot <- function(top_level_filter,
+                           dds_object,
                            gene_annotations,
                            export_tables = FALSE,
-                           top_level_filter){
-  top_level_filter_string <- rlang::enquo(top_level_filter) %>% rlang::as_label()
+                           export_dir = "./outputs/normalised_counts/",
+                           results_contrast_factor){
+
+
+  results_contrast_factor_string <- rlang::enquo(results_contrast_factor) %>% rlang::as_label()
   ################################################################################## #
   #Generate full, annotated table of results of DESeq2
   #
@@ -46,7 +81,10 @@
     as.data.frame() %>%
     tibble::rownames_to_column(var = "gene_ensembl") %>%
     dplyr::left_join(gene_annotations, by = c("gene_ensembl")) %>%
-    dplyr::select(gene_ensembl, gene_name, description, everything())
+    dplyr::select(.data$gene_ensembl,
+                  .data$gene_name,
+                  .data$description,
+                  tidyselect::everything())
 
 
 
@@ -66,19 +104,29 @@
     as.data.frame() %>%
     tibble::rownames_to_column(var = "gene_ensembl") %>%
     dplyr::left_join(gene_annotations, by = c("gene_ensembl")) %>%
-    dplyr::select(gene_ensembl, gene_name, description, everything())
+    dplyr::select(.data$gene_ensembl,
+                  .data$gene_name,
+                  .data$description,
+                  tidyselect::everything())
 
 
 
   ################################################################################## #
   #export tables of VST and log2 normalised data, plus the full list of DE output
   if(export_tables == TRUE){
+
+    if(!dir.exists(export_dir)){
+      dir.create(export_dir, recursive = TRUE)
+      message(crayon::green(paste("Directory created:", export_dir)))
+    } else{message(crayon::green(paste(export_dir,"Directory exists")))}
+
     data.table::fwrite(vsd_a ,
-                       file = paste0("./outputs/normalised_counts/",top_level_filter,"_VST_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"),".csv"), row.names = F)
+                       file = paste0(export_dir,top_level_filter,"_VST_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"),".txt"), row.names = F)
 
-    data.table::fwrite(log2norm_new_names,
-                       file = paste0("./outputs/normalised_counts/",top_level_filter,"_log2_of_DESEQ_internal_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"), ".txt"), row.names = F)
+    data.table::fwrite(log2norm_a,
+                       file = paste0(export_dir,top_level_filter,"_log2_of_DESEQ_internal_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"), ".txt"), row.names = F)
 
+    message(crayon::green(paste("Normalised tables exported to the sub-directory:", export_dir)))
     # fwrite(full_dataset_DE,
     #        file = paste0("./outputs/",region,"_DE_output_", format(Sys.time(), "%Y%m%d_%H%M"), ".txt"))
   }
@@ -86,35 +134,49 @@
 
   ################################################################################## #
   #Create PCA plot
-  pcaData <- DESeq2::plotPCA(vsd, intgroup=c("Diet"), returnData=TRUE, ntop = 500)
+  rcf <- rlang::enquo(results_contrast_factor)
+  pcaData <- DESeq2::plotPCA(vsd, intgroup=c(results_contrast_factor_string), returnData=TRUE, ntop = 500)
+
   percentVar <- round(100 * attr(pcaData, "percentVar"))
-  PCA_plot <- ggplot2::ggplot(pcaData, ggplot2::aes(PC1, PC2, fill=Diet)) +
+
+  PCA_plot <- ggplot2::ggplot(pcaData, ggplot2::aes(.data$PC1, .data$PC2, fill=!!rcf)) +
     ggplot2::geom_point(size=4.2, shape = 21, colour = "black", alpha = 0.8) +
     ggplot2::xlab(paste0("PC1: ",percentVar[1],"% variance")) +
     ggplot2::ylab(paste0("PC2: ",percentVar[2],"% variance")) +
     ggplot2::coord_fixed()+
     #coord_fixed(xlim = c(-150,150), ylim = c(-120, 120)) +
     ggplot2::theme_classic()+
-    ggplot2::geom_text(ggplot2::aes(label=name))+
-    ggplot2::ggtitle(label = paste(top_level_filter_string ))
+    ggrepel::geom_text_repel(mapping = ggplot2::aes(label=.data$name), max.overlaps = 10)+
+    ggplot2::ggtitle(label = paste(top_level_filter))
 
 
   ################################################################################## #
-  #Heatmap #************** Update with sample distances pre-calculated with dist(t(assay(vsd))) - see vignette
-  topVarGenes <- head( order( genefilter::rowVars( SummarizedExperiment::assay(vsd) ), decreasing=TRUE ), 500 )
+  #Heatmap of count matrix
+  topVarGenes <- BiocGenerics::order(genefilter::rowVars( SummarizedExperiment::assay(vsd) ), decreasing=TRUE )[1:30]
 
   heatmap_input <- SummarizedExperiment::assay(vsd)[ topVarGenes, ]
 
+  heatmap_input <- heatmap_input - BiocGenerics::rowMeans(heatmap_input)
+
+  df1 <- BiocGenerics::as.data.frame(SummarizedExperiment::colData(dds_object)[results_contrast_factor_string])
+
   heatmap_plot<- pheatmap::pheatmap(heatmap_input,
-                                    scale = "row",
-                                    #cutree_cols = 5,
-                                    #cutree_rows = 4,
-                                    clustering_method = "complete",
-                                    #kmeans_k = 50,
-                                    #annotation_row =
-                                    main = paste(top_level_filter_string ))
+                                    cluster_rows = F,
+                                    annotation_col = df1,
+                                    main = paste(top_level_filter, "- Top most variable genes" ))
 
+  ################################################################################## #
+  #Heatmap of sample-to-sample distances
+  #with dist(t(assay(vsd))) - see vignette
 
+  sampleDists <- stats::dist(BiocGenerics::t(SummarizedExperiment::assay(vsd)))
+  sampleDistMatrix <- as.matrix(sampleDists)
+
+  rownames(sampleDistMatrix) <- SummarizedExperiment::colData(vsd)[,results_contrast_factor_string]
+  colnames(sampleDistMatrix) <- NULL
+  sample_sample_heatmap <- pheatmap::pheatmap(sampleDistMatrix,
+           clustering_distance_rows=sampleDists,
+           clustering_distance_cols=sampleDists)
 
   ################################################################################## #
   #OUTPUTS - to lists already generated
@@ -124,16 +186,14 @@
 
   #put plots into a list, append to the list (from global environment) but named
   #plots of overall data
-  plots <- list( heatmap = heatmap_plot, PCA = print(PCA_plot))
-
-  #Plot_out_list <- c(Plot_out_list, setNames(list(plots), paste0(top_level_filter, "_plots")))
-
-
+  plots <- list( heatmap = heatmap_plot, PCA = print(PCA_plot), Sample_distances = sample_sample_heatmap)
 
   #put data into a list, append to the list (from global environment) but named
-  data_out <-  list(vsd = vsd_a, log2norm = log2norm_a)
+  norm_data_out <-  list(vsd = vsd_a, log2norm = log2norm_a)
 
-  #Norm_and_DESEQ_out_list <- c(Norm_and_DESEQ_out_list, setNames(list(data_out), paste0(top_level_filter, "_data")))
+  data_out <- stats::setNames(list(plots, norm_data_out),
+                       c(paste0(top_level_filter, "_overall_plots"),
+                         paste0(top_level_filter, "_normalised_data")))
 
-  return(list(plots, data_out))
+  return(data_out)
 }

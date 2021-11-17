@@ -10,12 +10,6 @@ make_pairwise_combinations(coldata, contrast_factor)
 \item{coldata}{either a dataframe or a call to colData() on a DESeqDataSet}
 
 \item{contrast_factor}{string. Name of column containing treatments to contrast}
-
-\item{top_level_column_name}{non-string.
-Name of column containing top level variable. Defaults to: \code{Region}.}
-
-\item{top_level_filter}{string. Name of top level (e.g. region) to filter data
-with.}
 }
 \description{
 \code{make_pairwise_combinations()} creates a list of all possible unique
