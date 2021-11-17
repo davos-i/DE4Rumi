@@ -14,8 +14,8 @@ metadata about the sample/animal. Particularly include all treatment info
 and animal ID in columns.}
 
 \item{column_with_col_names}{non-string. Name of the column in \code{colData}
-that matches names of columns in \code{count_data}. Should not include
-\code{ gene_ensembl} column as this is automatically detected.}
+that matches names of columns in \code{count_data}. This column hould not
+include and entry called "gene_ensembl", as this is automatically detected.}
 }
 \value{
 Returns a dataframe of \code{count_data} with columns ordered to

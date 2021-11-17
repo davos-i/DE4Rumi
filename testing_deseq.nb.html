@@ -244,21 +244,26 @@ coldata &lt;-  data.table::fread(file = &quot;../Sheep_RNAseq/Inputs/coldata_new
 <p>TODO - make it handle when too many names are in coldata compared to cts_all Error: Can’t subset columns that don’t exist. x Columns <code>BONE_8__Feed</code>, <code>BONE_20__Fast</code>, and <code>BONE_15__Refeed</code> don’t exist.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyMjIyMjICoqKioqKioqKioqKlxuIyBVc2UgbmV3IGZ1bmN0aW9uXG5jdHNfZmlsdGVyZWQgPC0gY2hlY2tfY291bnRfbWF0cml4KGNvdW50X2RhdGEgPSBjdHNfYWxsLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb2xEYXRhID0gY29sZGF0YSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb2x1bW5fd2l0aF9jb2xfbmFtZXMgPSBzYW1wbGVfbmFtZXNcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICApXG5cbmBgYCJ9 -->
-<pre class="r"><code>###### ************
-# Use new function
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3JlLXJ1biBjaGVja1xuY3RzX2ZpbHRlcmVkIDwtIGNoZWNrX2NvdW50X21hdHJpeChjb3VudF9kYXRhID0gY3RzX2FsbCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgY29sRGF0YSA9IGNvbGRhdGEsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgY29sdW1uX3dpdGhfY29sX25hbWVzID0gc2FtcGxlX25hbWVzXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgKVxuXG5gYGAifQ== -->
+<pre class="r"><code>#re-run check
 cts_filtered &lt;- check_count_matrix(count_data = cts_all, 
                             colData = coldata,
                             column_with_col_names = sample_names
                             )
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUEFTUzogQWxsIGNvbHVtbnMgaW4gY291bnRfZGF0YSBoYXZlIG1hdGNoaW5nIGRhdGEgaW4gY29sRGF0YVxuRkFJTDogY29sRGF0YSBoYXMgZW50cmllcyBpbiBjb2x1bW5fd2l0aF9jb2xfbmFtZXMgdGhhdCBkbyBub3QgbWF0Y2ggYSBjb2x1bW4gaW4gY291bnRfZGF0YS4gUG90ZW50aWFsbHkgbWlzc2luZyBkYXRhP1xuRW50cmllcyBpbiBjb2xEYXRhIHdpdGggbm8gbWF0Y2hpbmcgY291bnRzIGRhdGE6IGJyYWluXzQwX19UZXN0XG5FcnJvciBpbiBjaGVja19jb3VudF9tYXRyaXgoY291bnRfZGF0YSA9IGN0c19hbGwsIGNvbERhdGEgPSBjb2xkYXRhLCBjb2x1bW5fd2l0aF9jb2xfbmFtZXMgPSBzYW1wbGVfbmFtZXMpIDogXG4gIENoZWNrcyB0ZXJtaW5hdGVkLiBSdW4gc3Vic2V0X2NvbERhdGEoKSBhbmQgdHJ5IGFnYWluLlxuIn0= -->
+<!-- rnb-output-begin eyJkYXRhIjoiUEFTUzogQWxsIGNvbHVtbnMgaW4gY291bnRfZGF0YSBoYXZlIG1hdGNoaW5nIGRhdGEgaW4gY29sRGF0YVxuUEFTUzogUm93bmFtZXMgbm90IGRldGVjdGVkXG5QQVNTOiBGaXJzdCBjb2x1bW4gbmFtZSBpcyAnZ2VuZV9lbnNlbWJsJ1xuXG4gRGltZW5zaW9ucyBvZiByYXcgY291bnRzIGRhdGFzZXQgQkVGT1JFIHNvcnRpbmc6XG5nZW5lczogIDI3MDU0ICAgICBzYW1wbGVzOiAgMjM5XG5cbiBOdW1iZXIgb2Ygc2FtcGxlcyBpbiBjb2xEYXRhOiAyMzlcblxuIERpbWVuc2lvbnMgb2YgcmF3IGNvdW50cyBkYXRhc2V0IEFGVEVSIHNvcnRpbmc6XG5nZW5lczogIDI3MDU0ICAgICBzYW1wbGVzOiAgMjM5XG4ifQ== -->
 <pre><code>PASS: All columns in count_data have matching data in colData
-FAIL: colData has entries in column_with_col_names that do not match a column in count_data. Potentially missing data?
-Entries in colData with no matching counts data: brain_40__Test
-Error in check_count_matrix(count_data = cts_all, colData = coldata, column_with_col_names = sample_names) : 
-  Checks terminated. Run subset_colData() and try again.</code></pre>
+PASS: Rownames not detected
+PASS: First column name is &#39;gene_ensembl&#39;
+
+ Dimensions of raw counts dataset BEFORE sorting:
+genes:  27054     samples:  239
+
+ Number of samples in colData: 239
+
+ Dimensions of raw counts dataset AFTER sorting:
+genes:  27054     samples:  239</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
