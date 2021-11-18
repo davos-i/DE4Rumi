@@ -73,8 +73,9 @@ this directory doesn't exist, it will be created.}
 }
 \value{
 returns a named, nested list (list of lists) with dds_wald_object,
-list of DESeq result objects and list of pairwise plots (contains MA plots
-and p value histograms).
+list of DESeq result objects, list of results in dataframes (annotated with
+gene_names), and list of pairwise plots (contains MA plots and p value
+histograms).
 }
 \description{
 Wrapper to DESeq2 that is designed to be used iteratively for each element of

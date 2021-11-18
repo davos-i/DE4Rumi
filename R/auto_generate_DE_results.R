@@ -48,8 +48,9 @@
 #'   this directory doesn't exist, it will be created.
 #'
 #' @return returns a named, nested list (list of lists) with dds_wald_object,
-#'   list of DESeq result objects and list of pairwise plots (contains MA plots
-#'   and p value histograms).
+#'   list of DESeq result objects, list of results in dataframes (annotated with
+#'   gene_names), and list of pairwise plots (contains MA plots and p value
+#'   histograms).
 #'
 #' @export
 
@@ -168,8 +169,29 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
 
   message(crayon::blue("Results generated."))
   ################################################################################ #
-  #mutate descriptive columns to dataframes and create one long dataset of all results
+  #mutate descriptive columns to dataframes a
   list_results <- res_out
+
+  DE_annotated <-
+    list_results %>%
+    purrr::map(function(x, annot){
+      x %>%
+        BiocGenerics::as.data.frame() %>%
+        tibble::rownames_to_column(var = "gene_ensembl") %>%
+        dplyr::left_join(annot, by = c("gene_ensembl")) %>%
+        dplyr::select(.data$gene_ensembl,
+                      .data$gene_name,
+                      .data$description,
+                      tidyselect::everything()) %>%
+        dplyr::arrange(.data$padj)
+
+    },
+    annot = gene_annotations)
+
+
+
+
+
   ################################################################################## #
 
   # make MA plots (rough DESeq ones)
@@ -177,7 +199,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
   #iterates over all results objects to make plots
   message(crayon::blue("Plotting MA plots (default DESeq2 style for QC)..."))
   MA_pairwise_plots <-
-    purrr::map2(.x = list_results, .y = names(list_results),
+    purrr::map2(.x = res_out, .y = names(res_out),
                 function(x,names){
                   plot_title = paste(top_level_filter, names)
                   DESeq2::plotMA(x, main = plot_title)
@@ -190,7 +212,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
   #iterates over all results objects to make pvalue histograms (consider update with )
   message(crayon::blue("Plotting p value histograms (for QC)..."))
   pvalue_histogram_pairwise_plots <-
-    purrr::map2(.x = list_results, .y = names(list_results),
+    purrr::map2(.x = res_out, .y = names(res_out),
                 function(x,names){
                   graphics::hist(x$pvalue[x$baseMean > 1],
                        breaks = 0:20/20,
@@ -223,6 +245,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
 
   list_out <- list(dds_wald_object = dds_wald,
                    DESeq2_res_object = res_out,
+                   DESeq2_annot_df = DE_annotated,
                    pairwise_plots = pairwise_plots0,
                    overall_plots = overall_plots_list,
                    normalised_data = normalised_data_list)
