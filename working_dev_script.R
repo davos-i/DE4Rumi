@@ -11,6 +11,10 @@ devtools::load_all() #Ctrl + Shift + L
 #This has been added to .Rbuildignore using usethis::use_build_ignore()
 usethis::use_build_ignore("./working_dev_script.R")
 
+usethis::use_build_ignore("./outputs/")
+
+usethis::use_git_ignore("outputs/")
+usethis::use_git_ignore("outputs/normalised_counts")
 
 #the usethis package is very useful for most required package dev
 #library(usethis)
@@ -44,6 +48,7 @@ usethis::use_package("tidyr")
 usethis::use_package("tidyselect")
 usethis::use_package("graphics")
 usethis::use_package("grDevices")
+usethis::use_package("openxlsx")
 
 #uses .data from rlang
 usethis::use_import_from("rlang", ".data")

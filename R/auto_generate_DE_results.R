@@ -46,6 +46,9 @@
 #'   are exported to \code{"./outputs/normalised_counts/"}
 #' @param export_dir string. "./" indicates relative to working directory. IF
 #'   this directory doesn't exist, it will be created.
+#'  @param whole_data_normalisation logical. Should DESEQ2 be run for pairwise
+#'  comparisons, split by \code{top_level_filter}? or, if FALSE - normalised
+#'  output only for whole dataset.
 #'
 #' @return returns a named, nested list (list of lists) with dds_wald_object,
 #'   list of DESeq result objects, list of results in dataframes (annotated with
@@ -69,7 +72,8 @@ function(top_level_filter,
          alpha = 0.05,
          gene_annotations,
          export_tables = FALSE,
-         export_dir = "./outputs/normalised_counts/"
+         export_dir = "./outputs/",
+         whole_data_normalisation = FALSE
 ){
 
 
@@ -79,14 +83,18 @@ function(top_level_filter,
   }
 
   #Helpers
-  top_level_name_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
   column_of_samples_string <- rlang::enquo(column_of_samples) %>% rlang::as_label()
   cf <- rlang::enquo(results_contrast_factor)
+  tln <- rlang::enquo(top_level_name)
   a <- alpha
 
-  #### 1. subset data
 
-message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
+  #### 1. subset data
+if(whole_data_normalisation == FALSE){
+  #Helpers
+  top_level_name_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
+
+  message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
                                         top_level_filter,
                                         "******************* \n\n")))
   #rename column names as strings for subsetting with []
@@ -96,7 +104,11 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
     S4Vectors::subset(se_data,
                       select = SummarizedExperiment::colData(se_data)[[top_level_name_string]] == top_level_filter)
 
-
+} else if(whole_data_normalisation == TRUE){
+  message(crayon::green("Whole data normalisation selected. No pairwise results will be generated."))
+  se_data0 <- se_data
+  top_level_filter <- "Whole_Dataset"
+}
 
   #subset out samples to remove, if applicable
   if(any(is.na(samples_to_remove)) == FALSE){
@@ -128,7 +140,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
   #### 3.
   message(crayon::blue("Beginning DESeq analysis..."))
   #Run DESeq with Wald - pairwise
-  dds_wald <- DESeq2::DESeq(dds, test = "Wald",
+  dds_wald <<- DESeq2::DESeq(dds, test = "Wald",
                             betaPrior = F,
                             minReplicatesForReplace = 6,
                             parallel = FALSE)#this is default to n = 7; however this replace outlier gene values with a conservative estimate - this is very important for downstream PIF analysis. If n = <5/treatment it would be best to remove gene entirely.
@@ -156,7 +168,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
 
   #### 5. Produce results
   ################################################################################ #
-
+if(whole_data_normalisation == FALSE){
   message(crayon::blue("Generating pairwise DESeq2 results..."))
 
 
@@ -169,7 +181,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
 
   message(crayon::blue("Results generated."))
   ################################################################################ #
-  #mutate descriptive columns to dataframes a
+  #mutate descriptive columns to dataframes
   list_results <- res_out
 
   DE_annotated <-
@@ -189,8 +201,35 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
     annot = gene_annotations)
 
 
+  ################################################################################ #
+  #export DE Tables
+
+  if(export_tables == TRUE){
+
+    if(!dir.exists(export_dir)){
+      dir.create(export_dir, recursive = TRUE)
+      message(crayon::green(paste("Directory created:", export_dir)))
+    } else{message(crayon::green(paste(export_dir,"Directory exists")))}
+
+    DE_annotated2 <- DE_annotated
+    names(DE_annotated2) <-
+      names(DE_annotated2) %>%
+      stringr::str_squish() %>%
+      stringr::str_remove_all(" ") %>%
+      stringr::str_trunc(31,ellipsis = "")
 
 
+    openxlsx::write.xlsx(DE_annotated2,
+                         file = paste0("./outputs/DE tables - SPLIT - ",
+                                       top_level_filter,
+                                       " - ",
+                                       format(Sys.time(), "%Y%m%d_%H%M") ,
+                                       ".xlsx"),
+                         colWidths = "auto")
+
+    message(crayon::green(paste("DE tables exported to an .xlsx file in the sub-directory:", export_dir)))
+
+  }
 
   ################################################################################## #
 
@@ -223,7 +262,7 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
                 })
   message(crayon::blue("Finished plotting p value histograms."))
 
-
+}
   ################################################################################## #
   # Generate normalised counts tables, and plots of overall dataset
 
@@ -231,16 +270,37 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
                              dds_object = dds_wald,
                              gene_annotations,
                              export_tables,
-                             results_contrast_factor = !!cf)
+                             export_dir,
+                             results_contrast_factor = !!cf,
+                             whole_data_normalisation,
+                             top_level_name = !!tln)
   #accesses two separate parts of output, which already contain the region name in them so are unique
   overall_plots_list <- norm_out[grepl("overall_plots", names(norm_out))][[1]]
   normalised_data_list <- norm_out[grepl("normalised_data", names(norm_out))][[1]]
 
+
+
+
+
+
+  ################################################################################ #
+  #Calculate PIF
+  PIF_out <-
+    calculate_PIF(DE_res_list = res_out, #named list
+                top_level_filter,
+                log2_norm_data = normalised_data_list$log2norm, #from within same run
+                colData = SummarizedExperiment::colData(se_data0),
+                results_contrast_factor = !!cf,
+                export_tables,
+                export_dir)
+
+  PIF_out <- unlist(PIF_out, recursive = FALSE)
   ################################################################################## #
   #OUTPUT - results
   # Prepare data for export
   #add's plots into 1 named list for export
   message(crayon::blue("Preparing data for output..."))
+  if(whole_data_normalisation == FALSE){
   pairwise_plots0 <- list(MA_plots = MA_pairwise_plots, Pvalue_histogram = pvalue_histogram_pairwise_plots)
 
   list_out <- list(dds_wald_object = dds_wald,
@@ -248,17 +308,29 @@ message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
                    DESeq2_annot_df = DE_annotated,
                    pairwise_plots = pairwise_plots0,
                    overall_plots = overall_plots_list,
-                   normalised_data = normalised_data_list)
+                   normalised_data = normalised_data_list,
+                   PIF = PIF_out)
+
 
   #Add to a list with it's own name identifying it by top_level_filter (region)
   list_out <- stats::setNames(list(list_out), paste0(top_level_filter, "_DESeq2_Output"))
-  message(crayon::red("List output succesfully generated. Contains: dds_wald_object [dds after call to DESeq()], list of DESeq result objects and list of pairwise plots."))
-
+  message(crayon::red("List output succesfully generated."))
 
   message(crayon::black$bgCyan$bold(paste("\n\n ******************* END of - ",
                                           top_level_filter,
                                           "******************* \n\n")))
+  } else if(whole_data_normalisation == TRUE){
+    list_out <- list(dds_wald_object = dds_wald,
+                     overall_plots = overall_plots_list,
+                     normalised_data = normalised_data_list)
 
 
+    #Add to a list with it's own name identifying it by top_level_filter (region)
+    list_out <- stats::setNames(list(list_out), paste0("Whole_data_normalisation_output"))
+    message(crayon::red("List output succesfully generated."))
+
+    message(crayon::black$bgCyan$bold(paste("\n\n ******************* END ******************* \n\n")))
+
+  }
   return(list_out)
 }

@@ -24,8 +24,8 @@ To normalise gene expression across all tissues, the 'DESEQ2 - all tissues - FUL
 coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_20201105.csv") %>% 
   dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
-coldata <-  data.table::fread(file = "./coldata_test.csv") %>% 
-  dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
+#coldata <-  data.table::fread(file = "./coldata_test.csv") %>% 
+ # dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
 
 ```
@@ -69,6 +69,14 @@ cts_filtered <- check_count_matrix(count_data = cts_all,
 ```{r}
 
 test_annot <- annotate_gene_ensembl(cts_filtered, organism = "oaries")
+
+
+#used without internet connection
+# temp <- data.table::fread(file="./outputs/normalised_counts/ARC_VST_normalisedcounts_20211117_1638.txt")
+# test_annot <- temp %>% dplyr::select(gene_ensembl, gene_name, description)
+# test_annot <- cts_filtered %>% 
+#   dplyr::select(gene_ensembl) %>% 
+# dplyr::left_join(test_annot)
 ```
 
 
@@ -84,7 +92,7 @@ test_data <-
     rowData = test_annot, 
     colData = coldata)
 
-#subset columns to be every third, to make testing quicker
+#subset columns to be every n, to make testing quicker
 test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
 
 
@@ -98,7 +106,7 @@ TO DO: - detect all options for 'top_level_filter' and parse to map().
 ```{r}
 
 DE_out <- 
-  purrr::map(.x = list("LIV"),
+  purrr::map(.x = list("LIV", "ARC"),
              .f = auto_generate_DE_results, 
              se_data = test_data,
              top_level_name = Region,
@@ -112,7 +120,7 @@ DE_out <-
              alpha = 0.05,
              gene_annotations = test_annot,
              export_tables = TRUE,
-             export_dir = "./outputs/normalised_counts3/")
+             export_dir = "./outputs/")
 
 
 ```
@@ -120,9 +128,11 @@ DE_out <-
 #5. Accessing results
 TO DO: 
 ```{r}
-#unlist to take away teh unamed, top layer. Gives access via $
-DE_out_test <- DE_out %>% unlist(recursive = FALSE)
+#unlist to take away the un-named, top layer. Gives access via $
+DE_out2 <- DE_out %>% unlist(recursive = FALSE)
 
+
+DE_out2$ARC_DESeq2_Output$PIF$
 #{.[grepl("MA_plots", names(.))]}
 ```
 
@@ -131,6 +141,97 @@ DE_out_test <- DE_out %>% unlist(recursive = FALSE)
 DE_out_test$LIV_DESeq2_Output$DESeq2_annot_df
 
 ```
+# Normalise accross whole dataset (not each top_level/region)
+```{r}
+full_norm <- 
+  auto_generate_DE_results(
+             se_data = test_data,
+             top_level_name = Region,
+             column_of_samples = sample_names,
+             samples_to_remove = NA,
+             DESeq2_formula_design = ~Region_Diet,
+             gene_annotations = test_annot,
+             export_tables = TRUE,
+             export_dir = "./outputs/",
+             whole_data_normalisation = TRUE)
+
+
+ top_level_filter <- "Whole_Dataset"
+
+  
+ vsd <- DESeq2::vst(dds_wald, blind=FALSE)
+ 
+  
+ #results_contrast_factor_string <- "Region"
+ 
+ f_test <- function(top_level_name = Region){
+   results_contrast_factor_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
+ pcaData <- DESeq2::plotPCA(vsd, intgroup=c(results_contrast_factor_string), returnData=TRUE, ntop = 500)
+pcaData
+ }
+ 
+ f_test()
+ 
+  percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+  PCA_plot <- ggplot2::ggplot(pcaData, ggplot2::aes(.data$PC1, .data$PC2, fill=Region)) +
+    ggplot2::geom_point(size=4.2, shape = 21, colour = "black", alpha = 0.8) +
+    ggplot2::xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+    ggplot2::ylab(paste0("PC2: ",percentVar[2],"% variance")) +
+    ggplot2::coord_fixed()+
+    #coord_fixed(xlim = c(-150,150), ylim = c(-120, 120)) +
+    ggplot2::theme_classic()+
+    ggrepel::geom_text_repel(mapping = ggplot2::aes(label=.data$name), max.overlaps = 10)+
+    ggplot2::ggtitle(label = paste(top_level_filter))
+ 
+ 
+ norm_out <- .norm_and_plot(top_level_filter = NA,
+                             dds_object = dds_wald,
+                             gene_annotations = test_annot,
+                             export_tables = TRUE,
+                             export_dir = "./outputs/",
+                             results_contrast_factor = "test",
+                             whole_data_normalisation = TRUE,
+                             top_level_name = Region)
+  #accesses two separate parts of output, which already contain the region name in them so are unique
+  overall_plots_list <- norm_out[grepl("overall_plots", names(norm_out))][[1]]
+  normalised_data_list <- norm_out[grepl("normalised_data", names(norm_out))][[1]]
+  
+  
+    #export tables of VST and log2 normalised data, plus the full list of DE output
+  
+  
+  f_test <- 
+    function(export_tables = TRUE,
+             export_dir = "./outputs/"){
+      f_test2 <- 
+        function(export_tables,
+               export_dir){
+        if(export_tables == TRUE){
+          print("1")
+         print(dir.exists(export_dir))
+        }
+        }
+      f_test2(export_tables,
+              export_dir)    
+    }
+
+  f_test(export_tables = TRUE,
+         export_dir = "./outputs/")  
+
+```
+
+
+# g:Profiler search for GO Terms
+Take all DE genes as input to an pathway enrichment analysis using g:Profiler API
+This is the same as copy and paste each list of DE genes into the "Functional Profiling" box at https://biit.cs.ut.ee/gprofiler/
+
+```{r}
+
+```
+
+
+
 
 #Workign
 ```{r}

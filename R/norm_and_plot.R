@@ -15,7 +15,7 @@
 #'   tables, both vsd and log2norm, annotated with gene names and descriptions,
 #'   are exported to \code{"./outputs/normalised_counts/"})
 #' @param export_dir string. "./" indicates relative to working directory. IF
-#'   this directory doesn't exist, it will be created.
+#'   this specificed directory doesn't exist, it will be created.
 #' @param results_contrast_factor inherits from
 #'   \code{auto_generate_DE_results()}
 #'
@@ -34,11 +34,20 @@
                            dds_object,
                            gene_annotations,
                            export_tables = FALSE,
-                           export_dir = "./outputs/normalised_counts/",
-                           results_contrast_factor){
+                           export_dir = "./outputs/",
+                           results_contrast_factor,
+                           top_level_name = NA,
+                           whole_data_normalisation = FALSE){
 
 
+  #Determines filters for plotting, which require different input if for whole data normalisation from auto_generate_DE_results
+if(whole_data_normalisation == FALSE){
   results_contrast_factor_string <- rlang::enquo(results_contrast_factor) %>% rlang::as_label()
+  rcf <- rlang::enquo(results_contrast_factor)
+} else if(whole_data_normalisation == TRUE){
+  rcf <- rlang::enquo(top_level_name)
+  results_contrast_factor_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
+  }
   ################################################################################## #
   #Generate full, annotated table of results of DESeq2
   #
@@ -134,8 +143,8 @@
 
   ################################################################################## #
   #Create PCA plot
-  rcf <- rlang::enquo(results_contrast_factor)
-  pcaData <- DESeq2::plotPCA(vsd, intgroup=c(results_contrast_factor_string), returnData=TRUE, ntop = 500)
+
+  pcaData <- DESeq2::plotPCA(vsd, intgroup=results_contrast_factor_string, returnData=TRUE, ntop = 500)
 
   percentVar <- round(100 * attr(pcaData, "percentVar"))
 
@@ -146,7 +155,7 @@
     ggplot2::coord_fixed()+
     #coord_fixed(xlim = c(-150,150), ylim = c(-120, 120)) +
     ggplot2::theme_classic()+
-    ggrepel::geom_text_repel(mapping = ggplot2::aes(label=.data$name), max.overlaps = 10)+
+    #ggrepel::geom_text_repel(mapping = ggplot2::aes(label=.data$name), max.overlaps = 10)+
     ggplot2::ggtitle(label = paste(top_level_filter))
 
 

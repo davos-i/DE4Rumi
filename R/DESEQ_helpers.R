@@ -164,6 +164,7 @@ function(count_data,
 
   if(colData_names_logical == TRUE){
     message(crayon::green(("All entries in colData have matching count_data column. Run full check with check_counts_matrix() function. ")))
+    return(colData)
   } else{
   message(crayon::red(paste("Entries in colData with no matching counts data:",
                             paste(colData_missing_names, collapse = ", "))))

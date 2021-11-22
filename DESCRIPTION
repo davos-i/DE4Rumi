@@ -32,6 +32,7 @@ Imports:
     tidyr,
     tidyselect,
     graphics,
-    grDevices
+    grDevices,
+    openxlsx
 Depends: 
     S4Vectors

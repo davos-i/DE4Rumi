@@ -18,7 +18,8 @@ auto_generate_DE_results(
   alpha = 0.05,
   gene_annotations,
   export_tables = FALSE,
-  export_dir = "./outputs/normalised_counts/"
+  export_dir = "./outputs/",
+  whole_data_normalisation = FALSE
 )
 }
 \arguments{
@@ -69,7 +70,10 @@ tables, both vsd and log2norm, annotated with gene names and descriptions,
 are exported to \code{"./outputs/normalised_counts/"}}
 
 \item{export_dir}{string. "./" indicates relative to working directory. IF
-this directory doesn't exist, it will be created.}
+this directory doesn't exist, it will be created.
+@param whole_data_normalisation logical. Should DESEQ2 be run for pairwise
+comparisons, split by \code{top_level_filter}? or, if FALSE - normalised
+output only for whole dataset.}
 }
 \value{
 returns a named, nested list (list of lists) with dds_wald_object,

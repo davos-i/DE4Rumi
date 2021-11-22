@@ -9,8 +9,10 @@
   dds_object,
   gene_annotations,
   export_tables = FALSE,
-  export_dir = "./outputs/normalised_counts/",
-  results_contrast_factor
+  export_dir = "./outputs/",
+  results_contrast_factor,
+  top_level_name = NA,
+  whole_data_normalisation = FALSE
 )
 }
 \arguments{
@@ -26,7 +28,7 @@ tables, both vsd and log2norm, annotated with gene names and descriptions,
 are exported to \code{"./outputs/normalised_counts/"})}
 
 \item{export_dir}{string. "./" indicates relative to working directory. IF
-this directory doesn't exist, it will be created.}
+this specificed directory doesn't exist, it will be created.}
 
 \item{results_contrast_factor}{inherits from
 \code{auto_generate_DE_results()}}

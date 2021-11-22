@@ -4,12 +4,19 @@
 \name{DE4Rumi-package}
 \alias{DE4Rumi}
 \alias{DE4Rumi-package}
-\title{DE4Rumi: What the Package Does (One Line, Title Case)}
+\title{DE4Rumi: Differential Expression Analysis of RNAseq in Ruminant Models}
 \description{
-What the package does (one paragraph).
+Wrappers for DESEQ2, custom plots and co-expression for a specific use-case related to ruminant RNSeq.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/davos-i/DE4Rumi}
+}
+
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: David Innes \email{dave.j.innes@gmail.com} (\href{https://orcid.org/0000-0002-6246-0489}{ORCID})
 
 }
 \keyword{internal}
