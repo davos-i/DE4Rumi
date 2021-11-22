@@ -48,38 +48,7 @@ if(whole_data_normalisation == FALSE){
   rcf <- rlang::enquo(top_level_name)
   results_contrast_factor_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
   }
-  ################################################################################## #
-  #Generate full, annotated table of results of DESeq2
-  #
-  #   DE_out$ARC_DESeq2_Output$DESeq2_res_object$`ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI`
-  #
-  #
-  #   #change all test to dds_object
-  #
-  #   test <- fake_output %>%
-  #   unlist(recursive = FALSE) %>%
-  #     {.[grepl("res_object", names(.))]}
-  #
-  #   top_level_names <- stringr::str_split(names(test), pattern = "_", n=2, simplify = TRUE)[,1]
-  #
-  #
-  # test$LHA_DESeq2_Output.DESeq2_res_object$`ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI`
-  #
-  #
-  # #need a function within a function, as mutli layers of test$...
-  #
-  #
-  # test_output <- purrr::map2(.x =test ,
-  #             .y = top_level_names,
-  #             .f = function(x, y){
-  #
-  #               as.data.frame(x) %>%
-  #                 dplyr::mutate(top_level_filter = y,
-  #                               )
-  #             })
-  #
-  # test_output$LHA_DESeq2_Output.DESeq2_res_object
-  #
+
   ################################################################################## #
   #VSD Normalisation
 
@@ -94,7 +63,6 @@ if(whole_data_normalisation == FALSE){
                   .data$gene_name,
                   .data$description,
                   tidyselect::everything())
-
 
 
   ################################################################################## #
@@ -181,11 +149,13 @@ if(whole_data_normalisation == FALSE){
   sampleDists <- stats::dist(BiocGenerics::t(SummarizedExperiment::assay(vsd)))
   sampleDistMatrix <- as.matrix(sampleDists)
 
-  rownames(sampleDistMatrix) <- SummarizedExperiment::colData(vsd)[,results_contrast_factor_string]
+  #rownames(sampleDistMatrix) <- SummarizedExperiment::colData(vsd)[,results_contrast_factor_string]
+  rownames(sampleDistMatrix) <- SummarizedExperiment::colData(vsd)[,"sample_names"]
   colnames(sampleDistMatrix) <- NULL
   sample_sample_heatmap <- pheatmap::pheatmap(sampleDistMatrix,
            clustering_distance_rows=sampleDists,
-           clustering_distance_cols=sampleDists)
+           clustering_distance_cols=sampleDists,
+           main = paste(top_level_filter, "- Sample-Sample Distances"))
 
   ################################################################################## #
   #OUTPUTS - to lists already generated
