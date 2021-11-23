@@ -15,11 +15,6 @@ However, for downstream plotting, the normalised data from all regions is calcul
 
 To normalise gene expression across all tissues, the 'DESEQ2 - all tissues - FULL - **' needs to be used.
 
-# setup
-```{r}
-#load_all('.')
-```
-
 
 # 1. Import metadata
 ```{r}
@@ -68,7 +63,9 @@ rm(cts_all)
 
 ```{r}
 
-test_annot <- annotate_gene_ensembl(cts_filtered, organism = "oaries")
+test_annot <- annotate_gene_ensembl(cts_filtered, 
+                                    organism = "oaries",
+                                    base_URL = NA)
 
 
 #used without internet connection
@@ -127,15 +124,14 @@ DE_out <-
              export_dir = "./outputs/",
              whole_data_normalisation = FALSE)
 
-DE_out %>% str(max.level = 3)
+#DE_out %>% str(max.level = 3)
+#unlist to take away the un-named, top layer. Gives access via $
+DE_out <- DE_out %>% unlist(recursive = FALSE)
 
 ```
 
 # 5. Save Results
-```{r}
-#unlist to take away the un-named, top layer. Gives access via $
-DE_out <- DE_out %>% unlist(recursive = FALSE)
-```
+
 
 Saving to .rds compresses all of the data into one file that can be re-imported into RStudio, without having to re-run the very long commands above. It does not re-instate the whole image of the environment, just the output of auto_generate_DE_results() which has been unlisted so that every entry is named.
 
@@ -199,23 +195,24 @@ DE_out %>%
 ## DE
 These results are exported to individual worksheets in an excel file if export_tables = TRUE was selected in original run. However, they can also be accessed within R using the following techniques.
 ### Dataframes / tables
-#### Raw DE tables
+#### DE tables
+These tables include only the genes <= alpha (which is default 0.05),sorted on absolute PIF value
 ```{r}
 #Select DE tables to a list with 1 layer
 DE_dataframes <- 
   DE_out %>% 
-  purrr::map("DESeq2_annot_df") %>% 
+  purrr::map("DE_sig_PIF_df") %>% 
   unlist(recursive = FALSE)
 
 #access individual tables by using $ 
 #e.g.
-DE_dataframes$`ARC_DESeq2_Output.ARC_HCP.HP.UMEI vs ARC_LCP.LP.UMEI` %>% head()
+DE_dataframes %>% str(list.len = 4)
 
 #Can also search with a string e.g. "ARC"
 ARC_DE  <- DE_dataframes %>% 
   {.[grepl("ARC", names(.))]} 
 
-ARC_DE$`ARC_DESeq2_Output.ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI` %>% head()
+ARC_DE$`ARC_DESeq2_Output.ARC_HCP.HP.RMEI vs ARC_LCP.LP.UMEI` %>% View()
 
 ```
 #### PIF tables
@@ -228,7 +225,7 @@ PIF_dataframes <-
   
  #access individual tables by using $ 
 #e.g.
-PIF_dataframes$`ARC_DESeq2_Output.PIF - ARC_LCP.HP.UMEI vs ARC_HCP.LP.UMEI`
+PIF_dataframes$`ARC_DESeq2_Output.PIF - ARC_HCP.HP.UMEI vs ARC_LCP.LP.UMEI` %>% head()
 ```
 
 

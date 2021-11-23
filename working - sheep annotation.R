@@ -15,7 +15,7 @@ biomaRt::biomartCacheClear()
 test <-
   biomaRt::getBM(attributes = c('external_gene_name'),
       filters = 'ensembl_gene_id',
-      values = test_annot$gene_ensembl,
+      values = ,
       mart = ensembl,
       verbose = TRUE)
 
