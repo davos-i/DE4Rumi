@@ -180,59 +180,10 @@ if(whole_data_normalisation == FALSE){
 
 
   message(crayon::blue("Results generated."))
-  ################################################################################ #
-  #mutate descriptive columns to dataframes
-  list_results <- res_out
-
-  DE_annotated <-
-    list_results %>%
-    purrr::map(function(x, annot){
-      x %>%
-        BiocGenerics::as.data.frame() %>%
-        tibble::rownames_to_column(var = "gene_ensembl") %>%
-        dplyr::left_join(annot, by = c("gene_ensembl")) %>%
-        dplyr::select(.data$gene_ensembl,
-                      .data$gene_name,
-                      .data$description,
-                      tidyselect::everything()) %>%
-        dplyr::arrange(.data$padj)
-
-    },
-    annot = gene_annotations)
 
 
-  ################################################################################ #
-  #export DE Tables
-
-  if(export_tables == TRUE){
-
-    if(!dir.exists(export_dir)){
-      dir.create(export_dir, recursive = TRUE)
-      message(crayon::green(paste("Directory created:", export_dir)))
-    } else{message(crayon::green(paste(export_dir,"Directory exists")))}
-
-    DE_annotated2 <- DE_annotated
-    names(DE_annotated2) <-
-      names(DE_annotated2) %>%
-      stringr::str_squish() %>%
-      stringr::str_remove_all(" ") %>%
-      stringr::str_trunc(31,ellipsis = "")
-
-
-    openxlsx::write.xlsx(DE_annotated2,
-                         file = paste0("./outputs/DE tables - SPLIT - ",
-                                       top_level_filter,
-                                       " - ",
-                                       format(Sys.time(), "%Y%m%d_%H%M") ,
-                                       ".xlsx"),
-                         colWidths = "auto")
-
-    message(crayon::green(paste("DE tables exported to an .xlsx file in the sub-directory:", export_dir)))
-
-  }
 
   ################################################################################## #
-
   # make MA plots (rough DESeq ones)
 
   #iterates over all results objects to make plots
@@ -282,17 +233,83 @@ if(whole_data_normalisation == FALSE){
 
 
 
+  if(whole_data_normalisation == FALSE){
+    ################################################################################ #
+    # Calculate PIF
+    PIF_out <-
+      calculate_PIF(DE_res_list = res_out, #named list
+                    top_level_filter,
+                    log2_norm_data = normalised_data_list$log2norm, #from within same run
+                    colData = SummarizedExperiment::colData(se_data0),
+                    results_contrast_factor = !!cf,
+                    export_tables,
+                    export_dir)
 
-  ################################################################################ #
-  #Calculate PIF
-  PIF_out <-
-    calculate_PIF(DE_res_list = res_out, #named list
-                top_level_filter,
-                log2_norm_data = normalised_data_list$log2norm, #from within same run
-                colData = SummarizedExperiment::colData(se_data0),
-                results_contrast_factor = !!cf,
-                export_tables,
-                export_dir)
+    ################################################################################ #
+    # mutate descriptive columns to dataframes
+    # filter on adjusted p value to significance threshold
+    # adding PIF value to arrange on PIF
+    list_results <- res_out
+    list_PIF_results <- PIF_out #should be in same order, as res_out was iterated over to generate PIF_out
+
+    DE_annotated <-
+      purrr::map2(.x = list_results,
+                  .y = list_PIF_results,
+                  function(.x, .y, annot, p_thresh){
+
+                    PIF <- .y %>%
+                      dplyr::select(gene_ensembl, starts_with("zPIF")) %>%
+                      dplyr::rename_with(function(x){
+                        stringr::str_trunc(x,4,"right", "")},
+                        starts_with("zPIF")
+                      )
+
+                    .x %>%
+                      BiocGenerics::as.data.frame() %>%
+                      tibble::rownames_to_column(var = "gene_ensembl") %>%
+                      dplyr::left_join(annot, by = c("gene_ensembl")) %>%
+                      dplyr::left_join(PIF, by = c("gene_ensembl")) %>%
+                      dplyr::select(.data$gene_ensembl,
+                                    .data$gene_name,
+                                    .data$description,
+                                    tidyselect::everything()) %>%
+                      dplyr::filter(.data$padj <= p_thresh) %>%
+                      dplyr::arrange(desc(abs(.data$zPIF)))#descending, absolute
+
+                  },
+                  annot = gene_annotations,
+                  p_thresh = alpha)
+
+    ################################################################################ #
+    # export DE Tables
+    #
+    if(export_tables == TRUE){
+
+      if(!dir.exists(export_dir)){
+        dir.create(export_dir, recursive = TRUE)
+        message(crayon::green(paste("Directory created:", export_dir)))
+      } else{message(crayon::green(paste(export_dir,"Directory exists")))}
+
+      DE_annotated2 <- DE_annotated
+      names(DE_annotated2) <-
+        names(DE_annotated2) %>%
+        stringr::str_squish() %>%
+        stringr::str_remove_all(" ") %>%
+        stringr::str_trunc(31,ellipsis = "")
+
+
+      openxlsx::write.xlsx(DE_annotated2,
+                           file = paste0("./outputs/DE tables - SPLIT - ",
+                                         top_level_filter,
+                                         " - ",
+                                         format(Sys.time(), "%Y%m%d_%H%M") ,
+                                         ".xlsx"),
+                           colWidths = "auto")
+
+      message(crayon::green(paste("DE tables exported to an .xlsx file in the sub-directory:", export_dir)))
+
+    }
+  }
 
 
   ################################################################################## #
@@ -305,11 +322,11 @@ if(whole_data_normalisation == FALSE){
 
   list_out <- list(dds_wald_object = dds_wald,
                    DESeq2_res_object = res_out,
-                   DESeq2_annot_df = DE_annotated,
                    pairwise_plots = pairwise_plots0,
                    overall_plots = overall_plots_list,
                    normalised_data = normalised_data_list,
-                   PIF = PIF_out)
+                   PIF = PIF_out,
+                   DE_sig_PIF_df = DE_annotated)
 
 
   #Add to a list with it's own name identifying it by top_level_filter (region)
