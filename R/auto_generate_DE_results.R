@@ -294,7 +294,7 @@ if(whole_data_normalisation == FALSE){
                 export_tables,
                 export_dir)
 
-  PIF_out <- unlist(PIF_out, recursive = FALSE)
+
   ################################################################################## #
   #OUTPUT - results
   # Prepare data for export

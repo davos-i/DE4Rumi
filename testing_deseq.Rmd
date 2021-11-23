@@ -1,9 +1,9 @@
 ---
-title: "Testing DESEQ2"
+title: "DESEQ2 - Initial"
 output: html_notebook
 ---
 
-Iteration of DESEQ2 over: Region level, then treatment comparison
+Iteration of DESEQ2 over: Top_level_filter (e.g. Tissue Region) level, then treatment comparison
 
 Region level - e.g. Tissue region, indicates all DE data from same tissue and experiment. These are analysed independently from every other region.
 
@@ -17,7 +17,7 @@ To normalise gene expression across all tissues, the 'DESEQ2 - all tissues - FUL
 
 # setup
 ```{r}
-load_all('.')
+#load_all('.')
 ```
 
 
@@ -104,13 +104,13 @@ test_data <-
 The function `auto_generate_DE_results()` is iterated over using `purrr::map()`.
 For details on variables, see `?auto_generate_DE_results`.
 For multiple iterations it can take a long time to run.
-```{r}
+```{r include=FALSE}
 #get all top_level_filter options (which is parsed as .x in call to map; see ?auto_generate_DE_results)
 regions <- test_data$Region %>% unique() %>% as.list()
 
 
 DE_out <- 
-  purrr::map(.x = regions,
+  purrr::map(.x = regions[1:2],
              .f = auto_generate_DE_results, 
              se_data = test_data,
              top_level_name = Region,
@@ -124,7 +124,8 @@ DE_out <-
              alpha = 0.05,
              gene_annotations = test_annot,
              export_tables = FALSE,
-             export_dir = "./outputs/")
+             export_dir = "./outputs/",
+             whole_data_normalisation = FALSE)
 
 DE_out %>% str(max.level = 3)
 
@@ -198,6 +199,7 @@ DE_out %>%
 ## DE
 These results are exported to individual worksheets in an excel file if export_tables = TRUE was selected in original run. However, they can also be accessed within R using the following techniques.
 ### Dataframes / tables
+#### Raw DE tables
 ```{r}
 #Select DE tables to a list with 1 layer
 DE_dataframes <- 
@@ -215,6 +217,18 @@ ARC_DE  <- DE_dataframes %>%
 
 ARC_DE$`ARC_DESeq2_Output.ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI` %>% head()
 
+```
+#### PIF tables
+```{r}
+PIF_dataframes <- 
+  DE_out %>% 
+  purrr::map("PIF") %>%   
+  unlist(recursive = FALSE)
+
+  
+ #access individual tables by using $ 
+#e.g.
+PIF_dataframes$`ARC_DESeq2_Output.PIF - ARC_LCP.HP.UMEI vs ARC_HCP.LP.UMEI`
 ```
 
 
@@ -339,13 +353,27 @@ samp_dist_list <-
 ```
 
 
-# g:Profiler search for GO Terms
-Take all DE genes as input to an pathway enrichment analysis using g:Profiler API
-This is the same as copy and paste each list of DE genes into the "Functional Profiling" box at https://biit.cs.ut.ee/gprofiler/
-
+# 7. Filter and re-run
 ```{r}
 
 ```
+
+
+# 8. Generate whole dataset normalised counts
+```{r}
+full_norm <- 
+  auto_generate_DE_results(se_data = test_data,
+                           top_level_name = Region,
+                           column_of_samples = sample_names,
+                           samples_to_remove = NA,
+                           DESeq2_formula_design = ~Region_Diet,
+                           gene_annotations = test_annot,
+                           export_tables = TRUE,
+                           export_dir = "./outputs/",
+                           whole_data_normalisation = TRUE)
+
+```
+
 
 
 
