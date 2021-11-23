@@ -4,21 +4,33 @@
 \alias{annotate_gene_ensembl}
 \title{Collects human equivalent gene names and descriptions}
 \usage{
-annotate_gene_ensembl(data, organism = "oaries")
+annotate_gene_ensembl(
+  data,
+  organism = "oaries",
+  base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14"
+)
 }
 \arguments{
-\item{data}{dataframe. Should be counts matrix with first
-column name as 'gene_ensembl'}
+\item{data}{dataframe. Should be counts matrix with first column name as
+'gene_ensembl'}
 
 \item{organism}{string. From gprofiler2: Organism names are constructed by
 concatenating the first letter of the name and the family. For sheep data:
 "oaries". For cattle data:"btaurus". Default is "oaries".}
+
+\item{base_URL}{string. URL for the version of g:Profiler to use. This
+defaults to e100 as it matches the galaxy workflow, but also e103 broke a
+lot of names and is yet unresolved. Provided in the format:
+"http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14". \cr\cr Note that it is
+"http://" NOT "https://". \cr\cr Providing NA will default to g:Profiler2 default
+of "http://biit.cs.ut.ee/gprofiler". \cr\cr All available archives at:
+https://biit.cs.ut.ee/gprofiler/page/archives}
 }
 \description{
 \code{annotate_gene_ensembl} creates a dataframe of human equivalent gene
 names and description souced from gprofiler2::gconvert.
 }
 \details{
-The dataframe produced by this is used for downstream annotation of files.
-It is also attached to the data when it is in the SummarizedExperiment class.
+The dataframe produced by this is used for downstream annotation of files. It
+is also attached to the data when it is in the SummarizedExperiment class.
 }

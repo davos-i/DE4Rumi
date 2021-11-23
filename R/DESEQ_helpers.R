@@ -182,36 +182,45 @@ function(count_data,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 #'Collects human equivalent gene names and descriptions
 #'
 #'\code{annotate_gene_ensembl} creates a dataframe of human equivalent gene
 #'names and description souced from gprofiler2::gconvert.
 #'
-#'The dataframe produced by this is used for downstream annotation of files.
-#'It is also attached to the data when it is in the SummarizedExperiment class.
+#'The dataframe produced by this is used for downstream annotation of files. It
+#'is also attached to the data when it is in the SummarizedExperiment class.
 #'
-#'@param data dataframe. Should be counts matrix with first
-#'column name as 'gene_ensembl'
+#'@param data dataframe. Should be counts matrix with first column name as
+#'  'gene_ensembl'
 #'@param organism string. From gprofiler2: Organism names are constructed by
-#'concatenating the first letter of the name and the family. For sheep data:
-#'"oaries". For cattle data:"btaurus". Default is "oaries".
+#'  concatenating the first letter of the name and the family. For sheep data:
+#'  "oaries". For cattle data:"btaurus". Default is "oaries".
+#'@param base_URL string. URL for the version of g:Profiler to use. This
+#'  defaults to e100 as it matches the galaxy workflow, but also e103 broke a
+#'  lot of names and is yet unresolved. Provided in the format:
+#'  "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14". \cr\cr Note that it is
+#'  "http://" NOT "https://". \cr\cr Providing NA will default to g:Profiler2 default
+#'  of "http://biit.cs.ut.ee/gprofiler". \cr\cr All available archives at:
+#'  https://biit.cs.ut.ee/gprofiler/page/archives
 #'
 #'@export
 #'
-annotate_gene_ensembl <- function(data, organism = "oaries") {
+annotate_gene_ensembl <- function(data,
+                                  organism = "oaries",
+                                  base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14") {
+
+  if(is.na(base_URL)){
+    gprofiler2::set_base_url("http://biit.cs.ut.ee/gprofiler")
+    message(paste("Using default g:Profiler URL: ", gprofiler2::get_base_url()))
+  } else {
+    gprofiler2::set_base_url(base_URL)
+    message(paste("g:Profiler Version URL: ", gprofiler2::get_base_url()))
+  }
+
+
   message(paste("Using organism:", organism))
+
+
   converted0 <- gprofiler2::gconvert(
     query = data$gene_ensembl,
     organism = organism,
