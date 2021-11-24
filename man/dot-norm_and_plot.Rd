@@ -32,6 +32,13 @@ this specificed directory doesn't exist, it will be created.}
 
 \item{results_contrast_factor}{inherits from
 \code{auto_generate_DE_results()}}
+
+\item{top_level_name}{inherits from \code{auto_generate_DE_results()}.
+non-string. Name of \code{colData} column with top level factor, which is
+normally Tissue Region.}
+
+\item{whole_data_normalisation}{inherits from
+\code{auto_generate_DE_results()}.}
 }
 \value{
 returns a list of 1) heatmap_plot, PCA_plot and Sample distances

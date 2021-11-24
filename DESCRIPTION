@@ -33,6 +33,7 @@ Imports:
     tidyselect,
     graphics,
     grDevices,
-    openxlsx
+    openxlsx,
+    stats
 Depends: 
     S4Vectors

@@ -9,7 +9,11 @@ enrich_DE(
   sig_thresh = 0.05,
   log2_thresh = 0,
   split_by_pos_neg = FALSE,
-  base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14"
+  gene_annotations,
+  organism,
+  base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14",
+  export_tables = FALSE,
+  export_dir = "./outputs/"
 )
 }
 \arguments{
@@ -26,6 +30,12 @@ above this threshold. Uses absolute values (includes + and -).}
 \item{split_by_pos_neg}{logical. Should the query be run separately for genes
 with a + fold change, compared to genes with a - fold change?}
 
+\item{gene_annotations}{Output from call to \code{annotate_gene_ensembl()}}
+
+\item{organism}{string. From gprofiler2: Organism names are constructed by
+concatenating the first letter of the name and the family. For sheep data:
+"oaries". For cattle data:"btaurus". Default is "oaries".}
+
 \item{base_URL}{string. URL for the version of g:Profiler to use. This
 defaults to e100 as it matches the galaxy workflow, but also e103 broke a
 lot of names and is yet unresolved. Provided in the format:
@@ -33,6 +43,13 @@ lot of names and is yet unresolved. Provided in the format:
 is "http://" NOT "https://". \cr\cr Providing NA will default to g:Profiler2
 default of "http://biit.cs.ut.ee/gprofiler". \cr\cr All available archives
 at: https://biit.cs.ut.ee/gprofiler/page/archives}
+
+\item{export_tables}{logical. \code{TRUE} indicates the normalised counts
+tables, both vsd and log2norm, annotated with gene names and descriptions,
+are exported to \code{"./outputs/normalised_counts/"}}
+
+\item{export_dir}{string. "./" indicates relative to working directory. IF
+this directory doesn't exist, it will be created.}
 }
 \value{
 Returns a list of tables of same length as \code{list_DE_obj}, each with

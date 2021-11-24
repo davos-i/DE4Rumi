@@ -65,7 +65,7 @@ rm(cts_all)
 
 test_annot <- annotate_gene_ensembl(cts_filtered, 
                                     organism = "oaries",
-                                    base_URL = NA)
+                                    base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14")
 
 
 #used without internet connection
@@ -100,14 +100,14 @@ test_data <-
 # 4. Generate DE results
 The function `auto_generate_DE_results()` is iterated over using `purrr::map()`.
 For details on variables, see `?auto_generate_DE_results`.
-For multiple iterations it can take a long time to run.
+For multiple iterations it can take a long time to run. E.g. 6 Regions x 5 treatments of 8 samples (total n = 240) = ~30mins
 ```{r include=FALSE}
 #get all top_level_filter options (which is parsed as .x in call to map; see ?auto_generate_DE_results)
 regions <- test_data$Region %>% unique() %>% as.list()
 
 
 DE_out <- 
-  purrr::map(.x = regions[1:2],
+  purrr::map(.x = regions,
              .f = auto_generate_DE_results, 
              se_data = test_data,
              top_level_name = Region,
@@ -120,7 +120,7 @@ DE_out <-
              use_IHW_filtering = TRUE,
              alpha = 0.05,
              gene_annotations = test_annot,
-             export_tables = FALSE,
+             export_tables = TRUE,
              export_dir = "./outputs/",
              whole_data_normalisation = FALSE)
 
@@ -215,6 +215,7 @@ ARC_DE  <- DE_dataframes %>%
 ARC_DE$`ARC_DESeq2_Output.ARC_HCP.HP.RMEI vs ARC_LCP.LP.UMEI` %>% View()
 
 ```
+
 #### PIF tables
 ```{r}
 PIF_dataframes <- 
@@ -240,7 +241,7 @@ DE_results_objects <-
 
 #access individual tables by using $ 
 #e.g.
-DE_results_objects$`ARC_DESeq2_Output.ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI` 
+DE_results_objects$`LIV_DESeq2_Output.LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI`
 
 ```
 ## Stored plots

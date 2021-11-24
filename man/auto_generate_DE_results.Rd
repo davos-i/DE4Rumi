@@ -70,8 +70,9 @@ tables, both vsd and log2norm, annotated with gene names and descriptions,
 are exported to \code{"./outputs/normalised_counts/"}}
 
 \item{export_dir}{string. "./" indicates relative to working directory. IF
-this directory doesn't exist, it will be created.
-@param whole_data_normalisation logical. Should DESEQ2 be run for pairwise
+this directory doesn't exist, it will be created.}
+
+\item{whole_data_normalisation}{logical. Should DESEQ2 be run for pairwise
 comparisons, split by \code{top_level_filter}? or, if FALSE - normalised
 output only for whole dataset.}
 }

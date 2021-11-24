@@ -14,6 +14,7 @@
 #' @param top_level_filter string to filter top level (e.g. Tissue Region).
 #'   Inherits from \code{auto_generate_DE_results()}
 #' @param log2_norm_data log2 Normalised data from current call to DESEQ2 (NOT normalised data from WHOLE dataset)
+#' @param colData coldata normally accessed via a call to \code{SummarizedExperiment::colData()}
 #' @param results_contrast_factor non-string. See \code{?auto_generate_DE_results}
 #' @param export_tables logical. Should an excel file be exported of results? Inherits from \code{auto_generate_DE_results()}
 #' @param export_dir string. "./" indicates relative to working directory. IF
@@ -27,7 +28,7 @@
 calculate_PIF <- function(DE_res_list,
                                    top_level_filter = "LIV",
                                    log2_norm_data,
-                                   colData = coldata,
+                                   colData,
                                    results_contrast_factor,
                                    export_tables = FALSE,
                                    export_dir = "./outputs/"
@@ -54,7 +55,7 @@ calculate_PIF <- function(DE_res_list,
   #Select results_contrast_factor and sample_names
   col_annot <- colData %>%
     as.data.frame() %>%
-    dplyr::select(sample_names, {{ cf }})
+    dplyr::select(.data$sample_names, {{ cf }})
 
   # Add treatment annotation
   norm_annot <- dplyr::left_join(x = norm2,
@@ -64,7 +65,7 @@ calculate_PIF <- function(DE_res_list,
 
   #group by gene then results_contrast_factor and summarise with mean normalised counts
   norm_grouped <- norm_annot %>%
-    dplyr::group_by(gene_name, gene_ensembl, {{ cf }})
+    dplyr::group_by(.data$gene_name, .data$gene_ensembl, {{ cf }})
 
   norm_summary <- dplyr::summarise(norm_grouped, mean = mean(expression, na.rm = T))
 

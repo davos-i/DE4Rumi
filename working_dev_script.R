@@ -12,6 +12,7 @@ devtools::load_all() #Ctrl + Shift + L
 usethis::use_build_ignore("./working_dev_script.R")
 
 usethis::use_build_ignore("./outputs/")
+usethis::use_build_ignore("./outputs/gProfiler/")
 
 usethis::use_git_ignore("outputs/")
 usethis::use_git_ignore("outputs/normalised_counts")
@@ -58,6 +59,8 @@ usethis::use_import_from("S4Vectors", "mcols")
 usethis::use_import_from("S4Vectors", "mcols<-")
 usethis::use_import_from("S4Vectors", "metadata")
 usethis::use_import_from("S4Vectors", "metadata<-")
+usethis::use_import_from("stats", "setNames")
+usethis::use_import_from("rlang", ":=")
 
 #usethis::use_import_from("rlang", "ensym")
 

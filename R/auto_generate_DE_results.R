@@ -46,7 +46,7 @@
 #'   are exported to \code{"./outputs/normalised_counts/"}
 #' @param export_dir string. "./" indicates relative to working directory. IF
 #'   this directory doesn't exist, it will be created.
-#'  @param whole_data_normalisation logical. Should DESEQ2 be run for pairwise
+#' @param whole_data_normalisation logical. Should DESEQ2 be run for pairwise
 #'  comparisons, split by \code{top_level_filter}? or, if FALSE - normalised
 #'  output only for whole dataset.
 #'
@@ -140,7 +140,7 @@ if(whole_data_normalisation == FALSE){
   #### 3.
   message(crayon::blue("Beginning DESeq analysis..."))
   #Run DESeq with Wald - pairwise
-  dds_wald <<- DESeq2::DESeq(dds, test = "Wald",
+  dds_wald <- DESeq2::DESeq(dds, test = "Wald",
                             betaPrior = F,
                             minReplicatesForReplace = 6,
                             parallel = FALSE)#this is default to n = 7; however this replace outlier gene values with a conservative estimate - this is very important for downstream PIF analysis. If n = <5/treatment it would be best to remove gene entirely.
@@ -166,52 +166,52 @@ if(whole_data_normalisation == FALSE){
 
   #### 5. Produce results
   ################################################################################ #
-if(whole_data_normalisation == FALSE){
-  message(crayon::blue("Generating pairwise DESeq2 results..."))
+  if(whole_data_normalisation == FALSE){
+    message(crayon::blue("Generating pairwise DESeq2 results..."))
 
 
 
-  res_out <-   .calculate_DESEQ_results(dds_object = dds_wald,
-                                        contrast_factor = !!cf,
-                                        alpha = a,
-                                        use_IHW_filtering = use_IHW_filtering)
+    res_out <-   .calculate_DESEQ_results(dds_object = dds_wald,
+                                          contrast_factor = !!cf,
+                                          alpha = a,
+                                          use_IHW_filtering = use_IHW_filtering)
 
 
-  message(crayon::blue("Results generated."))
+    message(crayon::blue("Results generated."))
 
 
 
-  ################################################################################## #
-  # make MA plots (rough DESeq ones)
+    ################################################################################## #
+    # make MA plots (rough DESeq ones)
 
-  #iterates over all results objects to make plots
-  message(crayon::blue("Plotting MA plots (default DESeq2 style for QC)..."))
-  MA_pairwise_plots <-
-    purrr::map2(.x = res_out, .y = names(res_out),
-                function(x,names){
-                  plot_title = paste(top_level_filter, names)
-                  DESeq2::plotMA(x, main = plot_title)
-                  MA_plot <- grDevices::recordPlot()
-                })
-  message(crayon::blue("Finished MA plots."))
-  ################################################################################## #
-  #pvalue histograms - (updated to be x$baseMean >1)
+    #iterates over all results objects to make plots
+    message(crayon::blue("Plotting MA plots (default DESeq2 style for QC)..."))
+    MA_pairwise_plots <-
+      purrr::map2(.x = res_out, .y = names(res_out),
+                  function(x,names){
+                    plot_title = paste(top_level_filter, names)
+                    DESeq2::plotMA(x, main = plot_title)
+                    MA_plot <- grDevices::recordPlot()
+                  })
+    message(crayon::blue("Finished MA plots."))
+    ################################################################################## #
+    #pvalue histograms - (updated to be x$baseMean >1)
 
-  #iterates over all results objects to make pvalue histograms (consider update with )
-  message(crayon::blue("Plotting p value histograms (for QC)..."))
-  pvalue_histogram_pairwise_plots <-
-    purrr::map2(.x = res_out, .y = names(res_out),
-                function(x,names){
-                  graphics::hist(x$pvalue[x$baseMean > 1],
-                       breaks = 0:20/20,
-                       col = "grey50",
-                       border = "white",
-                       main = paste("p values (with baseMean > 1) of ", names))
-                  pvalue_histogram <- grDevices::recordPlot()
-                })
-  message(crayon::blue("Finished plotting p value histograms."))
+    #iterates over all results objects to make pvalue histograms (consider update with )
+    message(crayon::blue("Plotting p value histograms (for QC)..."))
+    pvalue_histogram_pairwise_plots <-
+      purrr::map2(.x = res_out, .y = names(res_out),
+                  function(x,names){
+                    graphics::hist(x$pvalue[x$baseMean > 1],
+                                   breaks = 0:20/20,
+                                   col = "grey50",
+                                   border = "white",
+                                   main = paste("p values (with baseMean > 1) of ", names))
+                    pvalue_histogram <- grDevices::recordPlot()
+                  })
+    message(crayon::blue("Finished plotting p value histograms."))
 
-}
+  }
   ################################################################################## #
   # Generate normalised counts tables, and plots of overall dataset
 
@@ -256,10 +256,10 @@ if(whole_data_normalisation == FALSE){
                   function(.x, .y, annot, p_thresh){
 
                     PIF <- .y %>%
-                      dplyr::select(gene_ensembl, starts_with("zPIF")) %>%
+                      dplyr::select(.data$gene_ensembl, tidyselect::starts_with("zPIF")) %>%
                       dplyr::rename_with(function(x){
                         stringr::str_trunc(x,4,"right", "")},
-                        starts_with("zPIF")
+                        tidyselect::starts_with("zPIF")
                       )
 
                     .x %>%
@@ -272,7 +272,7 @@ if(whole_data_normalisation == FALSE){
                                     .data$description,
                                     tidyselect::everything()) %>%
                       dplyr::filter(.data$padj <= p_thresh) %>%
-                      dplyr::arrange(desc(abs(.data$zPIF)))#descending, absolute
+                      dplyr::arrange(dplyr::desc(abs(.data$zPIF)))#descending, absolute
 
                   },
                   annot = gene_annotations,
@@ -317,24 +317,24 @@ if(whole_data_normalisation == FALSE){
   #add's plots into 1 named list for export
   message(crayon::blue("Preparing data for output..."))
   if(whole_data_normalisation == FALSE){
-  pairwise_plots0 <- list(MA_plots = MA_pairwise_plots, Pvalue_histogram = pvalue_histogram_pairwise_plots)
+    pairwise_plots0 <- list(MA_plots = MA_pairwise_plots, Pvalue_histogram = pvalue_histogram_pairwise_plots)
 
-  list_out <- list(dds_wald_object = dds_wald,
-                   DESeq2_res_object = res_out,
-                   pairwise_plots = pairwise_plots0,
-                   overall_plots = overall_plots_list,
-                   normalised_data = normalised_data_list,
-                   PIF = PIF_out,
-                   DE_sig_PIF_df = DE_annotated)
+    list_out <- list(dds_wald_object = dds_wald,
+                     DESeq2_res_object = res_out,
+                     pairwise_plots = pairwise_plots0,
+                     overall_plots = overall_plots_list,
+                     normalised_data = normalised_data_list,
+                     PIF = PIF_out,
+                     DE_sig_PIF_df = DE_annotated)
 
 
-  #Add to a list with it's own name identifying it by top_level_filter (region)
-  list_out <- stats::setNames(list(list_out), paste0(top_level_filter, "_DESeq2_Output"))
-  message(crayon::red("List output succesfully generated."))
+    #Add to a list with it's own name identifying it by top_level_filter (region)
+    list_out <- stats::setNames(list(list_out), paste0(top_level_filter, "_DESeq2_Output"))
+    message(crayon::red("List output succesfully generated."))
 
-  message(crayon::black$bgCyan$bold(paste("\n\n ******************* END of - ",
-                                          top_level_filter,
-                                          "******************* \n\n")))
+    message(crayon::black$bgCyan$bold(paste("\n\n ******************* END of - ",
+                                            top_level_filter,
+                                            "******************* \n\n")))
   } else if(whole_data_normalisation == TRUE){
     list_out <- list(dds_wald_object = dds_wald,
                      overall_plots = overall_plots_list,

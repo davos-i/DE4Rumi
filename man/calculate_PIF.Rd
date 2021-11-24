@@ -8,7 +8,7 @@ calculate_PIF(
   DE_res_list,
   top_level_filter = "LIV",
   log2_norm_data,
-  colData = coldata,
+  colData,
   results_contrast_factor,
   export_tables = FALSE,
   export_dir = "./outputs/"
@@ -23,6 +23,8 @@ LIV_LCP.LP.UMEI".}
 Inherits from \code{auto_generate_DE_results()}}
 
 \item{log2_norm_data}{log2 Normalised data from current call to DESEQ2 (NOT normalised data from WHOLE dataset)}
+
+\item{colData}{coldata normally accessed via a call to \code{SummarizedExperiment::colData()}}
 
 \item{results_contrast_factor}{non-string. See \code{?auto_generate_DE_results}}
 

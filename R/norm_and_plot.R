@@ -18,6 +18,11 @@
 #'   this specificed directory doesn't exist, it will be created.
 #' @param results_contrast_factor inherits from
 #'   \code{auto_generate_DE_results()}
+#' @param top_level_name inherits from \code{auto_generate_DE_results()}.
+#'   non-string. Name of \code{colData} column with top level factor, which is
+#'   normally Tissue Region.
+#' @param whole_data_normalisation inherits from
+#'   \code{auto_generate_DE_results()}.
 #'
 #'
 #' @return returns a list of 1) heatmap_plot, PCA_plot and Sample distances
@@ -25,11 +30,9 @@
 #'
 #' @export
 #'
+#'
 
-#'
-#'
-#'
-#'
+
 .norm_and_plot <- function(top_level_filter,
                            dds_object,
                            gene_annotations,

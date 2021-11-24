@@ -140,11 +140,19 @@ enrich_DE <-
     message(crayon::green("Reformatting dataframe... COMPLETE"))
     ############################################################# #
     # Split by query column
-    message(crayon::green("Split dataframe... "))
+    message(crayon::green("Split and sort dataframe... "))
 
     gost_result_split <- split(gost_result_new, gost_result_new$query)
 
-    message(crayon::green("Split dataframe... COMPLETE"))
+    #Arrange be p value
+    gost_result_split <-
+      gost_result_split %>%
+      purrr::map(function(x){
+        x %>%
+          dplyr::arrange(.data$p_value)
+      })
+
+    message(crayon::green("Split and sort dataframe... COMPLETE"))
 
 
     ############################################################# #
@@ -152,7 +160,7 @@ enrich_DE <-
     gost_result_split2 <- gost_result_split
 
     top_level_names <- names(gost_result_split2) %>%
-      stringr::str_extract(pattern = "^.{3}")
+      stringr::str_extract(pattern = "^[^_]*") #match 0 or more characters from beginning of string up to the first _
 
     top_level_names_regex <- top_level_names %>%
       unique() %>%

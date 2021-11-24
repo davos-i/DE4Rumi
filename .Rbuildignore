@@ -4,3 +4,4 @@
 ^\./working_dev_script\.R$
 ^testing_deseq\.Rmd$
 ^\./outputs$
+^\./outputs/gProfiler$
