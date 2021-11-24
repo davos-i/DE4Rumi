@@ -151,12 +151,23 @@ enrich_DE <-
     # rename to truncate to fit excel worksheet requirements
     gost_result_split2 <- gost_result_split
 
+    top_level_names <- names(gost_result_split2) %>%
+      stringr::str_extract(pattern = "^.{3}")
+
+    top_level_names_regex <- top_level_names %>%
+      unique() %>%
+      paste0("_") %>%
+      paste(collapse = "|")
+
     names1 <- names(gost_result_split2) %>%
       stringr::str_split(pattern = "\\.", n = 2, simplify = TRUE) %>%
       magrittr::extract(,2) %>%
+      stringr::str_remove_all(pattern = top_level_names_regex) %>%
       stringr::str_squish() %>%
       stringr::str_remove_all(" ") %>%
-      stringr::str_trunc(27,ellipsis = "")
+      stringr::str_trunc(23,ellipsis = "")
+
+    names2 <- stringr::str_c(top_level_names, names1, sep = "_")
 
     #truncated but with Pos or neg at start.
     if(split_by_pos_neg == TRUE){
@@ -165,9 +176,10 @@ enrich_DE <-
         stringr::str_remove(pattern = "\\.")
 
       names(gost_result_split2) <-
-        stringr::str_c(pos_neg_names, names1, sep = ".")
+        stringr::str_c(pos_neg_names, names2, sep = "_") %>%
+        stringr::str_trunc(31,ellipsis = "")
     } else{
-      names(gost_result_split2) <- names1
+      names(gost_result_split2) <- names2
       }
 
     ############################################################# #
@@ -190,6 +202,6 @@ enrich_DE <-
 
     }
 
-    return(gost_result_split)
+    return(gost_result_split2)
   }
 
