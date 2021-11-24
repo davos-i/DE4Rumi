@@ -94,7 +94,7 @@ if(whole_data_normalisation == FALSE){
 
     if(!dir.exists(export_dir)){
       dir.create(export_dir, recursive = TRUE)
-      message(crayon::green(paste("Directory created:", export_dir)))
+      message(crayon::red(paste("Directory created:", export_dir)))
     } else{message(crayon::green(paste(export_dir,"Directory exists")))}
 
     data.table::fwrite(vsd_a ,

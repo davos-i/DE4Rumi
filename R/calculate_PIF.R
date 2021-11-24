@@ -153,7 +153,7 @@ if(export_tables == TRUE){
 
   if(!dir.exists(export_dir)){
     dir.create(export_dir, recursive = TRUE)
-    message(crayon::green(paste("Directory created:", export_dir)))
+    message(crayon::red(paste("Directory created:", export_dir)))
   } else{message(crayon::green(paste(export_dir,"Directory exists")))}
 
   PIF_out2 <- PIF_out1
@@ -165,7 +165,8 @@ if(export_tables == TRUE){
     stringr::str_trunc(31,ellipsis = "")
 
   openxlsx::write.xlsx(PIF_out2,
-                       file = paste0("./outputs/PIF tables - SPLIT - ",
+                       file = paste0(export_dir,
+                                     "PIF tables - SPLIT - ",
                                      top_level_filter,
                                      " - ",
                                      format(Sys.time(), "%Y%m%d_%H%M") ,

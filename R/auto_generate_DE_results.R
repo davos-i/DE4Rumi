@@ -148,8 +148,6 @@ if(whole_data_normalisation == FALSE){
   message(crayon::blue("Completed DESeq analysis."))
 
 
-
-
   #### 4.
   message(crayon::blue("Plotting cooks distance..."))
   #Check cooks distance boxplot to see if any gene is higher on average
@@ -287,7 +285,7 @@ if(whole_data_normalisation == FALSE){
 
       if(!dir.exists(export_dir)){
         dir.create(export_dir, recursive = TRUE)
-        message(crayon::green(paste("Directory created:", export_dir)))
+        message(crayon::red(paste("Directory created:", export_dir)))
       } else{message(crayon::green(paste(export_dir,"Directory exists")))}
 
       DE_annotated2 <- DE_annotated
@@ -299,7 +297,8 @@ if(whole_data_normalisation == FALSE){
 
 
       openxlsx::write.xlsx(DE_annotated2,
-                           file = paste0("./outputs/DE tables - SPLIT - ",
+                           file = paste0(export_dir,
+                                         "DE tables - SPLIT - ",
                                          top_level_filter,
                                          " - ",
                                          format(Sys.time(), "%Y%m%d_%H%M") ,
