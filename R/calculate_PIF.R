@@ -91,25 +91,34 @@ calculate_PIF <- function(DE_res_list,
 
   .calculate_PIF_per_res_obj <- function(DE_res_object, DE_res_names){
 
+    ################################ #
+    #Prepare DE data
+    #make names for filtering DE data
     DE_name_short <- stringr::str_remove_all(DE_res_names, pattern = " ")
-    new_col_name <-paste0("log2FC_", DE_name_short)
+    new_FC_col_name <- paste0("log2FC_", DE_name_short)
+    new_P_col_name <- paste0("padj_", DE_name_short)
 
     #DE_res_object
     foldchange <- DE_res_object %>%
       BiocGenerics::as.data.frame() %>%
       tibble::rownames_to_column("gene_ensembl") %>%
       dplyr::select(.data$gene_ensembl,
-                    !!new_col_name := .data$log2FoldChange)
+                    !!new_FC_col_name := .data$log2FoldChange,
+                    !!new_P_col_name := .data$padj)
 
+    ################################ #
+    # Join to normalised data
     norm_spread0 <- dplyr::left_join(norm_spread,
                               foldchange,
                               by = "gene_ensembl")
 
+    ################################ #
     #Define new column names
     col1 <- stringr::str_split(DE_res_names, pattern = " vs ", simplify = T)[, 1] %>% rlang::sym()
     col2 <- stringr::str_split(DE_res_names, pattern = " vs ", simplify = T)[, 2] %>% rlang::sym()
 
     log2column <- paste0("log2FC_", col1, "vs", col2) %>% rlang::sym()
+    padjcolumn <- paste0("padj_", col1, "vs", col2) %>% rlang::sym()
 
     mean_colname <- paste0("mean_", col1, "vs", col2) %>% rlang::sym()
     pif_colname <- paste0("PIF_", col1, "vs", col2) %>% rlang::sym()
@@ -125,6 +134,7 @@ calculate_PIF <- function(DE_res_list,
                     !!pif_colname := (!!mean_colname) * (!!log2column)
                     )  %>%
       dplyr::ungroup() %>%
+      #Scale (z-score) the PIF, for downstream filtering for nominal significance
       dplyr::mutate(dplyr::across(.cols = dplyr::contains("PIF"),
                                   .fns = scale,
                                   .names = "z{col}")) %>%
@@ -132,6 +142,7 @@ calculate_PIF <- function(DE_res_list,
                     .data$gene_ensembl,
                     !!mean_colname,
                     !!log2column,
+                    !!padjcolumn,
                     !!pif_colname,
                     !!zpif_colname) %>%
       dplyr::arrange(!!zpif_colname)

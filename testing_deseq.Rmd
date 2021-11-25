@@ -63,9 +63,10 @@ rm(cts_all)
 
 ```{r}
 
-test_annot <- annotate_gene_ensembl(cts_filtered, 
-                                    organism = "oaries",
-                                    base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14")
+test_annot <- 
+  annotate_gene_ensembl(cts_filtered, 
+                        organism = "oaries",
+                        base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14")
 
 
 #used without internet connection
@@ -90,7 +91,7 @@ test_data <-
     colData = coldata)
 
 #subset columns to be every n, to make testing quicker
-#test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
+test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
 
 
 ```
@@ -101,13 +102,13 @@ test_data <-
 The function `auto_generate_DE_results()` is iterated over using `purrr::map()`.
 For details on variables, see `?auto_generate_DE_results`.
 For multiple iterations it can take a long time to run. E.g. 6 Regions x 5 treatments of 8 samples (total n = 240) = ~30mins
-```{r include=FALSE}
+```{r}
 #get all top_level_filter options (which is parsed as .x in call to map; see ?auto_generate_DE_results)
 regions <- test_data$Region %>% unique() %>% as.list()
 
 
 DE_out <- 
-  purrr::map(.x = regions,
+  purrr::map(.x = regions[4:5],
              .f = auto_generate_DE_results, 
              se_data = test_data,
              top_level_name = Region,
@@ -139,7 +140,7 @@ Saving to .rds compresses all of the data into one file that can be re-imported 
 ```{r eval=FALSE, include=TRUE}
 # Defaults to NOT RUN when running whole document.
 #Save file as progress. Can be used as input instead of re-running all of the DESEQ functions.
-saveRDS(DE_out, file = "./outputs/DE_out_file.rds")
+saveRDS(DE_out, file = "./outputs/DE_out_file_testing.rds")
 
 #to re-import to environment:
 #DE_out2 <- readRDS(file = "./outputs/DE_out_file.rds")

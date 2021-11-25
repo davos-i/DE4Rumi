@@ -34,6 +34,8 @@ Imports:
     graphics,
     grDevices,
     openxlsx,
-    stats
+    stats,
+    ggpubr,
+    gridExtra
 Depends: 
     S4Vectors
