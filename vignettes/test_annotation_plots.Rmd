@@ -115,7 +115,7 @@ MA_plots_out$`MA Plot of LIV_HCP.HP.UMEI vs LIV_LCP.HP.UMEI`
 #RIF
 ```{r}
 
-# remove this line?
+# access data
 DE_dataframes_list <- 
   DE_out %>% 
   purrr::map("DE_sig_PIF_df")

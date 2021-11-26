@@ -52,7 +52,7 @@ usethis::use_package("grDevices")
 usethis::use_package("openxlsx")
 usethis::use_package("ggpubr")
 usethis::use_package("gridExtra")
-usethis::use_package("CeTF") #bioconductor
+usethis::use_package("CeTF", type = "Suggests") #bioconductor
 
 #uses .data from rlang
 usethis::use_import_from("rlang", ".data")
@@ -64,6 +64,7 @@ usethis::use_import_from("S4Vectors", "metadata")
 usethis::use_import_from("S4Vectors", "metadata<-")
 usethis::use_import_from("stats", "setNames")
 usethis::use_import_from("rlang", ":=")
+#usethis::use_import_from("CeTF", "RIF")
 
 #usethis::use_import_from("rlang", "ensym")
 

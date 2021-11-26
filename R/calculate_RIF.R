@@ -191,6 +191,11 @@ calculate_RIF <- function(DE_data_list,
             n1 <- length(which(colnames(norm_exp_sub) %in% condition1_names))
             n2 <- length(which(colnames(norm_exp_sub) %in% condition2_names))
 
+
+            if (!requireNamespace("CeTF", quietly = TRUE)) {
+              stop("Package \"CeTF\" needed for RIF function to work. Please install it using BiocManager::install(\"CeTF\").",
+                   call. = FALSE)
+            }
             message(crayon::green("Running RIF... "))
             RIF_out <- CeTF::RIF(input = RIF_input,
                                  nta = length(Target),
