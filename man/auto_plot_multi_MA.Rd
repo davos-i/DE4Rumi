@@ -26,6 +26,8 @@ generated from  \code{names(PIF_list)}.}
 \item{export_TIFFs}{Logical. Should individual TIFF images be exported for
 each MA plot?}
 
+\item{export_pdf}{Logical. Should all plots be exported to one pdf file?}
+
 \item{pdf_height}{number. Height of each pdf page in mm.}
 
 \item{pdf_width}{number. Width of each pdf page in mm.}
