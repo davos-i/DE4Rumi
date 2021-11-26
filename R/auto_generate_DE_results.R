@@ -320,6 +320,7 @@ if(whole_data_normalisation == FALSE){
     pairwise_plots0 <- list(MA_plots = MA_pairwise_plots, Pvalue_histogram = pvalue_histogram_pairwise_plots)
 
     list_out <- list(dds_wald_object = dds_wald,
+                     boxplot_cooks_distance = boxplot_cooks_distance,
                      DESeq2_res_object = res_out,
                      pairwise_plots = pairwise_plots0,
                      overall_plots = overall_plots_list,
@@ -337,6 +338,7 @@ if(whole_data_normalisation == FALSE){
                                             "******************* \n\n")))
   } else if(whole_data_normalisation == TRUE){
     list_out <- list(dds_wald_object = dds_wald,
+                     boxplot_cooks_distance = boxplot_cooks_distance,
                      overall_plots = overall_plots_list,
                      normalised_data = normalised_data_list)
 
