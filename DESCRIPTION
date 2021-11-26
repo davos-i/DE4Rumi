@@ -42,7 +42,8 @@ Depends:
 LazyData: true
 Suggests: 
     CeTF,
-    knitr
+    knitr,
+    rmarkdown
 VignetteBuilder:
     knitr
 
