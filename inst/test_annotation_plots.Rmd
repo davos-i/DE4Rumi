@@ -1,0 +1,156 @@
+---
+title: "DE Annotation and Plotting"
+output: html_notebook
+---
+
+
+
+#Load data
+See "DESeq2 - Initial" for how this was calculated.
+
+
+
+
+
+# g:Profiler search for GO Terms
+Take all DE genes as input to an pathway enrichment analysis using g:Profiler API
+This is the same as copy and paste each list of DE genes into the "Functional Profiling" box at https://biit.cs.ut.ee/gprofiler/
+
+```{r}
+#DE_results_objects from DE_out
+# DE_results_objects <- 
+#   DE_out %>% 
+#   purrr::map("DESeq2_res_object") %>% 
+#   unlist(recursive = FALSE)
+
+#view names
+names(DE_results_objects)
+
+#This can be filtered to do only 1 region using following example, where "ARC"
+#is any string within the names 
+# list_to_run <- DE_results_objects %>%
+#                  {.[grepl("ARC", names(.))]}
+
+gprofiler_output <- 
+    enrich_DE(list_DE_obj = DE_results_objects,
+            sig_thresh = 0.05,
+            log2_thresh = 0,
+            split_by_pos_neg = FALSE,
+            gene_annotations = test_annot,
+            organism = "oaries",
+            base_URL = "http://biit.cs.ut.ee/gprofiler_archive3/e100_eg47_p14",
+            export_tables = TRUE,
+            export_dir = "./outputs/gProfiler/")
+
+
+gprofiler_output
+
+```
+
+# Full normalisation
+
+
+
+# Plot MA - Individual use
+```{r fig.width = 8}
+#access PIF data
+PIF_dataframes <- 
+  DE_out %>% 
+  purrr::map("PIF") %>%   
+  unlist(recursive = FALSE)
+
+#Select 1 dataframe to parse to function.
+PIF_to_plot <-
+  PIF_dataframes[[1]]
+
+#Run with defaults
+plot_custom_MA(PIF_data = PIF_to_plot) 
+
+#default values:
+# plot_custom_MA(PIF_data,
+#            padj_DE_filter = 0.05,
+#            PIF_sig = 2.58, 
+#            n_labels_top_bottom = 20,
+#            label_type = "PIF & DE", 
+#            #label_lower_exp_limit = 3,
+#            custom_labels = NA,
+#            point_size = 1.5,
+#            point_alpha = 0.5,
+#            font_face = "plain",
+#            font_colour = "black",
+#            font_size = 8,
+#            plot_title = "TITLE",
+#            xlab = "Mean expression",
+#            ylab = "Log2 fold change",
+#            ggtheme = ggplot2::theme_classic(),
+#            palette = c("lightgrey", "orange", "red", "blue", "green"),
+#            label.rectangle = FALSE)
+
+```
+
+
+# Auto plot all MA plots
+```{r fig.width = 8}
+
+#create shorter list to test with
+
+MA_plots_out <-
+  auto_plot_multi_MA(PIF_list = PIF_dataframes,
+           list_plot_titles = NA,
+           export_TIFFs = FALSE,
+           export_pdf = TRUE,
+           pdf_height = 140,
+           pdf_width = 220,
+           export_dir = "./outputs/MA_plots/")
+
+MA_plots_out
+```
+
+
+```{r fig.width=8}
+MA_plots_out$`MA Plot of LIV_HCP.HP.UMEI vs LIV_LCP.HP.UMEI`
+```
+
+
+#RIF
+```{r}
+
+# access data
+DE_dataframes_list <- 
+  DE_out %>% 
+  purrr::map("DE_sig_PIF_df")
+  
+#DE_dataframes_list %>% names()
+
+RIF_output <- 
+  calculate_RIF(DE_data_list = DE_dataframes_list,
+                TFs = NA,
+                norm_exp_data = full_norm$Whole_data_normalisation_output$normalised_data$vsd,
+                colData = SummarizedExperiment::colData(test_data),
+                results_contrast_factor = Region_Diet,
+                column_of_samples = sample_names,
+                all_genes_as_TF = TRUE
+              )
+
+RIF_output$`RUM - RIF`$`RUM_HCP.LP.UMEI vs RUM_LCP.LP.UMEI`%>% View()
+
+#Collapse into 1 large dataframe
+# RIF_bound<- 
+#   data.table::rbindlist(unlist(RIF_output, recursive = FALSE), idcol="ID")
+
+```
+
+
+```{r}
+RIF_bound <- 
+  data.table::rbindlist(unlist(RIF_output, recursive = FALSE), idcol="ID")
+
+
+```
+
+
+
+
+
+
+
