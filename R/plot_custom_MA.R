@@ -90,6 +90,7 @@ plot_custom_MA  <-
            tiff_height = 140
            ) {
 
+    message(crayon::green(paste0("\nMaking ",plot_title ,"...")))
 
     #remove any attributes, normally remnant attributes from scale function
     PIF_data[] <- lapply(PIF_data, function(x) { attributes(x) <- NULL; x })
@@ -103,7 +104,7 @@ plot_custom_MA  <-
 
     data1$zPIF[abs(data1$zPIF) < PIF_sig] = NA
 
-    message(crayon::green(paste("Number of significant PIF genes: ",
+    message(crayon::cyan(paste("Number of significant PIF genes: ",
                                 (length(which(!is.na(data1$zPIF))
                                         )
                                  )
@@ -145,7 +146,7 @@ plot_custom_MA  <-
     ############################################################################ #
     if(label_type == "PIF"){
       # for selecting n above the line and n below the line
-      labs_data <- plyr::rbind.fill(dplyr::slice_max(labs_data0,
+      labs_data <- dplyr::bind_rows(dplyr::slice_max(labs_data0,
                                               n = n_labels_top_bottom,
                                               order_by = .data$zPIF),
                                     dplyr::slice_min(labs_data0,
@@ -164,6 +165,7 @@ plot_custom_MA  <-
     #   labs_data <- dplyr::bind_rows(l_max, l_min)
     #
     # }
+
 
     if(label_type == "PIF & DE"){
       labs_data1 <-labs_data0 %>%
@@ -283,6 +285,6 @@ plot_custom_MA  <-
     message(crayon::green(paste0("Saved file: ", filename1)))
     }
     ################################################################## #
-
+    message(crayon::green(paste0("Making ",plot_title ,"... COMPLETE\n")))
     return(p)
   }
