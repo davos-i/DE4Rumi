@@ -5,3 +5,6 @@
 ^testing_deseq\.Rmd$
 ^\./outputs$
 ^\./outputs/gProfiler$
+^README\.Rmd$
+^\.github$
+^data-raw$

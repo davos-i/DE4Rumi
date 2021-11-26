@@ -52,6 +52,7 @@ usethis::use_package("grDevices")
 usethis::use_package("openxlsx")
 usethis::use_package("ggpubr")
 usethis::use_package("gridExtra")
+usethis::use_package("CeTF") #bioconductor
 
 #uses .data from rlang
 usethis::use_import_from("rlang", ".data")

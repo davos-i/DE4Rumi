@@ -1,13 +1,3 @@
-
-
-#requires:
-# normalised exp data
-# list of TF (optional)
-# coldata
-# DE Data
-#
-#iterate for each Region, and for each Pairwise...
-
 #' Calculate RIF scores
 #'
 #' Calculates 2 types of Regulatory Impact Factors, based on Reverter work.
@@ -18,8 +8,8 @@
 #'
 #'
 #' @param DE_data_list A list of named lists containing DE dataframes. Output of
-#'   \code{auto_generate_DE_results()} that has been prepared by calling
-#'   \code{DE_out %>% purrr::map("DE_sig_PIF_df")}
+#'   \code{auto_generate_DE_results} that has been prepared by calling
+#'   \code{purrr::map(DE_out,"DE_sig_PIF_df")}
 #' @param TFs character vector of Transcription Factors to use for RIF
 #'   calculations. Optional and only used if \code{all_genes_as_TF = FALSE}
 #' @param norm_exp_data Whole data normalisation output - use VST norm.
@@ -45,7 +35,7 @@ calculate_RIF <- function(DE_data_list,
                           norm_exp_data,
                           gene_annotations,
                           all_genes_as_TF = FALSE,
-                          colData = coldata0,
+                          colData,
                           results_contrast_factor,
                           column_of_samples){
 
@@ -104,8 +94,8 @@ calculate_RIF <- function(DE_data_list,
 
           norm_exp_sub <-
             norm_exp_data %>%
-            dplyr::select(gene_ensembl, tidyselect::all_of(columns_to_select)) %>%
-            dplyr::distinct(gene_ensembl, .keep_all = T) %>%
+            dplyr::select(.data$gene_ensembl, tidyselect::all_of(columns_to_select)) %>%
+            dplyr::distinct(.data$gene_ensembl, .keep_all = T) %>%
             tibble::column_to_rownames("gene_ensembl") %>%
             as.matrix()
 
@@ -184,7 +174,7 @@ calculate_RIF <- function(DE_data_list,
             # 2. Identify genes with a SD of 0 within a condition
             #
             row_std <-  lapply(list_separate_treatments,
-                               function(x){which(apply(x,1, sd) == 0)})
+                               function(x){which(apply(x,1, stats::sd) == 0)})
 
             exclude <- unique(c(names(row_std$a), names(row_std$b)))
 
@@ -212,10 +202,10 @@ calculate_RIF <- function(DE_data_list,
             #Calculate mean RIF scores, absolute of mean, and arrange
             RIF_out <- RIF_out %>%
               dplyr::rowwise() %>%
-              dplyr::mutate(mean_RIF = mean(c(RIF1,RIF2), na.rm = TRUE)) %>%
+              dplyr::mutate(mean_RIF = mean(c(.data$RIF1,.data$RIF2), na.rm = TRUE)) %>%
               dplyr::ungroup() %>%
-              dplyr::mutate(abs_mean_RIF = abs(mean_RIF)) %>%
-              dplyr::arrange(dplyr::desc(abs_mean_RIF))
+              dplyr::mutate(abs_mean_RIF = abs(.data$mean_RIF)) %>%
+              dplyr::arrange(dplyr::desc(.data$abs_mean_RIF))
 
             #Annotate results
             RIF_out <- RIF_out %>%

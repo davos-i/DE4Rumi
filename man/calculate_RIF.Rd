@@ -10,14 +10,20 @@ calculate_RIF(
   norm_exp_data,
   gene_annotations,
   all_genes_as_TF = FALSE,
-  colData = coldata0,
+  colData,
   results_contrast_factor,
   column_of_samples
 )
 }
 \arguments{
+\item{DE_data_list}{A list of named lists containing DE dataframes. Output of
+\code{auto_generate_DE_results} that has been prepared by calling
+\code{purrr::map(DE_out,"DE_sig_PIF_df")}}
+
 \item{TFs}{character vector of Transcription Factors to use for RIF
 calculations. Optional and only used if \code{all_genes_as_TF = FALSE}}
+
+\item{norm_exp_data}{Whole data normalisation output - use VST norm.}
 
 \item{gene_annotations}{Output from call to \code{annotate_gene_ensembl()}}
 
