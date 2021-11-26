@@ -246,7 +246,11 @@ plot_custom_MA  <-
 
 
     #set graphical params from user input in function above
-    p <- ggpubr::ggpar(p, palette = palette, ggtheme = ggtheme)
+    #p <- ggpubr::ggpar(p, palette = palette, ggtheme = ggtheme)
+    p <- p +
+      ggplot2::scale_color_manual(values = palette) +
+      ggplot2::scale_fill_manual(values = palette) +
+      ggtheme
 
     ################################################################## #
     # Add customised options for legend position

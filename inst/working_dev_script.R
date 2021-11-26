@@ -50,7 +50,7 @@ usethis::use_package("tidyselect")
 usethis::use_package("graphics")
 usethis::use_package("grDevices")
 usethis::use_package("openxlsx")
-usethis::use_package("ggpubr")
+#usethis::use_package("ggpubr")
 usethis::use_package("gridExtra")
 usethis::use_package("CeTF", type = "Suggests") #bioconductor
 

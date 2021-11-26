@@ -21,7 +21,7 @@ To normalise gene expression across all tissues, the 'DESEQ2 - all tissues - FUL
 
 #import data about columns, that is each column should be metadata about the sample/animal. Particularly include all treatment info and animal ID in columns. 
  coldata <-  data.table::fread(file = "./extdata/coldata_new_names_20201105.csv") %>% 
-#   dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
+   dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
 #test to throw error
 #coldata <-  data.table::fread(file = "./coldata_test.csv") %>% 
@@ -91,7 +91,7 @@ test_data <-
     colData = coldata)
 
 #subset columns to be every n, to make testing quicker
-test_data <- test_data[,seq(0,ncol(cts_filtered)-1,2)] 
+test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
 
 
 ```
@@ -108,7 +108,7 @@ regions <- test_data$Region %>% unique() %>% as.list()
 
 
 DE_out1 <- 
-  purrr::map(.x = regions[4:5],
+  purrr::map(.x = regions[5],
              .f = auto_generate_DE_results, 
              se_data = test_data,
              top_level_name = Region,
