@@ -20,15 +20,14 @@ To normalise gene expression across all tissues, the 'DESEQ2 - all tissues - FUL
 ```{r}
 
 #import data about columns, that is each column should be metadata about the sample/animal. Particularly include all treatment info and animal ID in columns. 
-# coldata <-  data.table::fread(file = "../Sheep_RNAseq/Inputs/coldata_new_names_20201105.csv") %>% 
+ coldata <-  data.table::fread(file = "./extdata/coldata_new_names_20201105.csv") %>% 
 #   dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
 #test to throw error
 #coldata <-  data.table::fread(file = "./coldata_test.csv") %>% 
  # dplyr::mutate(sample_names = paste0(Region, "_", ID, "__", Diet))
 
-#loaded via package
-data(coldata)
+
 
 ```
 
@@ -37,10 +36,7 @@ data(coldata)
 
 # 2. import all count tables and join
 ```{r matrix_input, echo=T}
-#loaded via package
-data(cts_all)
-
-# cts_all <- data.table::fread(file= "./cts_renamed_all_Sheep.txt")
+cts_all <- data.table::fread(file= "./extdata/cts_renamed_all_Sheep.txt")
 
 # 1. Run check function
 cts_filtered <- check_count_matrix(count_data = cts_all, 

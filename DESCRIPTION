@@ -42,4 +42,8 @@ Depends:
     S4Vectors
 LazyData: true
 Suggests: 
-    CeTF
+    CeTF,
+    knitr
+VignetteBuilder:
+    knitr
+
