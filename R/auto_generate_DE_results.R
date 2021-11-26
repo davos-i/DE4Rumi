@@ -348,5 +348,7 @@ if(whole_data_normalisation == FALSE){
     message(crayon::black$bgCyan$bold(paste("\n\n ******************* END ******************* \n\n")))
 
   }
+  #print("checking names output:")
+  #print(names(list_out))
   return(list_out)
 }
