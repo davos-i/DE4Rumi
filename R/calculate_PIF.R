@@ -11,7 +11,7 @@
 #' @param DE_res_list List of DE results objects from DESEQ2. List names must be
 #'   in the format Condition 1 vs Condition 2 e.g. "LIV_HCP.HP.UMEI vs
 #'   LIV_LCP.LP.UMEI".
-#' @param top_level_filter string to filter top level (e.g. Tissue Region).
+#' @param top_level_group_individual string to filter top level (e.g. Tissue Region).
 #'   Inherits from \code{auto_generate_DE_results()}
 #' @param log2_norm_data log2 Normalised data from current call to DESEQ2 (NOT normalised data from WHOLE dataset)
 #' @param colData coldata normally accessed via a call to \code{SummarizedExperiment::colData()}
@@ -26,7 +26,7 @@
 #' @export
 
 calculate_PIF <- function(DE_res_list,
-                                   top_level_filter = "LIV",
+                                   top_level_group_individual,
                                    log2_norm_data,
                                    colData,
                                    results_contrast_factor,
@@ -41,10 +41,10 @@ calculate_PIF <- function(DE_res_list,
   ########################################################################## #
   #Produce Mean Expression for each Treatment (results_contrast_factor)
 
-  #Prepare normalised data for this run (top_level_filter)
+  #Prepare normalised data for this run (top_level_group_individual)
   ## Select only the columns with expression data, and pivot longer
   col_names_current <- colnames(dplyr::select(log2_norm_data,
-                                              tidyselect::starts_with(top_level_filter)))
+                                              tidyselect::starts_with(top_level_group_individual)))
 
   norm2 <- tidyr::pivot_longer(log2_norm_data,
                                cols = tidyselect::all_of(col_names_current),
@@ -144,7 +144,8 @@ calculate_PIF <- function(DE_res_list,
                     !!log2column,
                     !!padjcolumn,
                     !!pif_colname,
-                    !!zpif_colname) %>%
+                    !!zpif_colname,
+                    !!.data$description) %>%
       dplyr::arrange(!!zpif_colname)
     }
 
@@ -179,7 +180,7 @@ if(export_tables == TRUE){
   openxlsx::write.xlsx(PIF_out2,
                        file = paste0(export_dir,
                                      "PIF tables - SPLIT - ",
-                                     top_level_filter,
+                                     top_level_group_individual,
                                      " - ",
                                      format(Sys.time(), "%Y%m%d_%H%M") ,
                                      ".xlsx"),

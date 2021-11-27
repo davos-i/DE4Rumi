@@ -7,7 +7,7 @@
 #' stabilised data), and also using log2 normilisation (log2norm). This function
 #' also generates 3 types of quality control plots for the overall dataset.
 #'
-#' @param top_level_filter inherits from \code{auto_generate_DE_results()}
+#' @param top_level_group_individual inherits from \code{auto_generate_DE_results()}
 #' @param dds_object DESeq2 data object, inherits from
 #'   \code{auto_generate_DE_results()}
 #' @param gene_annotations Output from \code{annotate_gene_ensembl()}
@@ -18,7 +18,7 @@
 #'   this specificed directory doesn't exist, it will be created.
 #' @param results_contrast_factor inherits from
 #'   \code{auto_generate_DE_results()}
-#' @param top_level_name inherits from \code{auto_generate_DE_results()}.
+#' @param top_level_colname inherits from \code{auto_generate_DE_results()}.
 #'   non-string. Name of \code{colData} column with top level factor, which is
 #'   normally Tissue Region.
 #' @param whole_data_normalisation inherits from
@@ -33,13 +33,13 @@
 #'
 
 
-.norm_and_plot <- function(top_level_filter,
+.norm_and_plot <- function(top_level_group_individual,
                            dds_object,
                            gene_annotations,
                            export_tables = FALSE,
                            export_dir = "./outputs/",
                            results_contrast_factor,
-                           top_level_name = NA,
+                           top_level_colname = NA,
                            whole_data_normalisation = FALSE){
 
 
@@ -48,8 +48,8 @@ if(whole_data_normalisation == FALSE){
   results_contrast_factor_string <- rlang::enquo(results_contrast_factor) %>% rlang::as_label()
   rcf <- rlang::enquo(results_contrast_factor)
 } else if(whole_data_normalisation == TRUE){
-  rcf <- rlang::enquo(top_level_name)
-  results_contrast_factor_string <- rlang::enquo(top_level_name) %>% rlang::as_label()
+  rcf <- rlang::enquo(top_level_colname)
+  results_contrast_factor_string <- rlang::enquo(top_level_colname) %>% rlang::as_label()
   }
 
   ################################################################################## #
@@ -101,10 +101,10 @@ if(whole_data_normalisation == FALSE){
     } else{message(crayon::green(paste(export_dir,"Directory exists")))}
 
     data.table::fwrite(vsd_a ,
-                       file = paste0(export_dir,top_level_filter,"_VST_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"),".txt"), row.names = F)
+                       file = paste0(export_dir,top_level_group_individual,"_VST_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"),".txt"), row.names = F)
 
     data.table::fwrite(log2norm_a,
-                       file = paste0(export_dir,top_level_filter,"_log2_of_DESEQ_internal_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"), ".txt"), row.names = F)
+                       file = paste0(export_dir,top_level_group_individual,"_log2_of_DESEQ_internal_normalisedcounts_",format(Sys.time(), "%Y%m%d_%H%M"), ".txt"), row.names = F)
 
     message(crayon::green(paste("Normalised tables exported to the sub-directory:", export_dir)))
     # fwrite(full_dataset_DE,
@@ -127,7 +127,7 @@ if(whole_data_normalisation == FALSE){
     #coord_fixed(xlim = c(-150,150), ylim = c(-120, 120)) +
     ggplot2::theme_classic()+
     #ggrepel::geom_text_repel(mapping = ggplot2::aes(label=.data$name), max.overlaps = 10)+
-    ggplot2::ggtitle(label = paste(top_level_filter))
+    ggplot2::ggtitle(label = paste(top_level_group_individual))
 
 
   ################################################################################## #
@@ -143,7 +143,7 @@ if(whole_data_normalisation == FALSE){
   heatmap_plot<- pheatmap::pheatmap(heatmap_input,
                                     cluster_rows = F,
                                     annotation_col = df1,
-                                    main = paste(top_level_filter, "- Top most variable genes" ))
+                                    main = paste(top_level_group_individual, "- Top most variable genes" ))
 
   ################################################################################## #
   #Heatmap of sample-to-sample distances
@@ -158,7 +158,7 @@ if(whole_data_normalisation == FALSE){
   sample_sample_heatmap <- pheatmap::pheatmap(sampleDistMatrix,
            clustering_distance_rows=sampleDists,
            clustering_distance_cols=sampleDists,
-           main = paste(top_level_filter, "- Sample-Sample Distances"))
+           main = paste(top_level_group_individual, "- Sample-Sample Distances"))
 
   ################################################################################## #
   #OUTPUTS - to lists already generated
@@ -174,8 +174,8 @@ if(whole_data_normalisation == FALSE){
   norm_data_out <-  list(vsd = vsd_a, log2norm = log2norm_a)
 
   data_out <- stats::setNames(list(plots, norm_data_out),
-                       c(paste0(top_level_filter, "_overall_plots"),
-                         paste0(top_level_filter, "_normalised_data")))
+                       c(paste0(top_level_group_individual, "_overall_plots"),
+                         paste0(top_level_group_individual, "_normalised_data")))
 
   return(data_out)
 }

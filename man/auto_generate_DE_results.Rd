@@ -5,10 +5,10 @@
 \title{Auto Generate DE Results}
 \usage{
 auto_generate_DE_results(
-  top_level_filter,
   se_data,
-  top_level_name,
-  column_of_samples,
+  top_level_groups,
+  top_level_colname,
+  sample_colname,
   samples_to_remove = NA,
   DESeq2_formula_design,
   rowSums_filter = 10,
@@ -23,16 +23,15 @@ auto_generate_DE_results(
 )
 }
 \arguments{
-\item{top_level_filter}{string. Name of each element of \code{top_level_name}
-to be iterated over. Usually this is provided by a call to \code{map()} or
-\code{lapply()}.}
-
 \item{se_data}{SummarizedExperiment object of experimental data.}
 
-\item{top_level_name}{non-string. Name of \code{colData} column with top
-level factor, which is normally Tissue Region.}
+\item{top_level_groups}{character vector of names of each element of \code{top_level_colname}
+to be iterated over.}
 
-\item{column_of_samples}{non-string. Name of \code{colData} column with
+\item{top_level_colname}{non-string. Name of \code{colData} column with top
+level factor, which is normally "Tissue_Region".}
+
+\item{sample_colname}{non-string. Name of \code{colData} column with
 sample names (used for filtering).}
 
 \item{samples_to_remove}{string/s. Names of samples to remove e.g.
@@ -73,22 +72,24 @@ are exported to \code{"./outputs/normalised_counts/"}}
 this directory doesn't exist, it will be created.}
 
 \item{whole_data_normalisation}{logical. Should DESEQ2 be run for pairwise
-comparisons, split by \code{top_level_filter}? or, if FALSE - normalised
+comparisons, split by \code{top_level_groups}? or, if FALSE - normalised
 output only for whole dataset.}
 }
 \value{
-returns a named, nested list (list of lists) with dds_wald_object,
-list of DESeq result objects, list of results in dataframes (annotated with
-gene_names), and list of pairwise plots (contains MA plots and p value
-histograms).
+returns a named, nested list (list of lists) with: \itemize{
+\item dds_wald_object \item boxplot_cooks_distance \item DESeq2_res_object
+\item pairwise_plots \item overall_plots \item normalised_data \item PIF
+\item DE_sig_PIF_df}
 }
 \description{
-Wrapper to DESeq2 that is designed to be used iteratively for each element of
-\code{top_level_filter} e.g. for each Tissue Region separately.
+Wrapper to DESeq2 that iterates over each element of
+\code{top_level_groups} and conducts pairwise comparisons, QC plots and other
+analysis. Can also normalise data over whole dataset
+(ignoring \code{top_level_groups})
 }
 \details{
 This wrapper uses a call to \code{.calculate_DESEQ_results} which determines
-all possible pairwise comparisons, based on the \code{top_level_name}
+all possible pairwise comparisons, based on the \code{top_level_colname}
 attribute which is also a column of \code{colData}. Defaults to use a formula
 design of \code{~Region_Diet}, but could be changed to be \code{~Region +
 Diet} (see \code{vignette("DESeq2")})but the pairwise comparions are
