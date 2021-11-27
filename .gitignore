@@ -5,4 +5,5 @@
 inst/doc
 outputs/
 outputs/normalised_counts
+outputs/MA_plots
 working - sheep annotation.R
