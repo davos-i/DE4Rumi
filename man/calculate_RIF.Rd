@@ -12,7 +12,7 @@ calculate_RIF(
   all_genes_as_TF = FALSE,
   colData,
   results_contrast_factor,
-  column_of_samples
+  samples_colname
 )
 }
 \arguments{
@@ -37,7 +37,7 @@ calculations. Optional and only used if \code{all_genes_as_TF = FALSE}}
 \code{DESeq2_formula_design} that is used to generate pairwise
 comparisons.e.g. Region_Diet}
 
-\item{column_of_samples}{non-string. Name of \code{colData} column with
+\item{samples_colname}{non-string. Name of \code{colData} column with
 sample names (used for filtering).}
 }
 \value{

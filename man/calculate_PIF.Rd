@@ -6,7 +6,7 @@
 \usage{
 calculate_PIF(
   DE_res_list,
-  top_level_filter = "LIV",
+  top_level_groups = "LIV",
   log2_norm_data,
   colData,
   results_contrast_factor,
@@ -19,7 +19,7 @@ calculate_PIF(
 in the format Condition 1 vs Condition 2 e.g. "LIV_HCP.HP.UMEI vs
 LIV_LCP.LP.UMEI".}
 
-\item{top_level_filter}{string to filter top level (e.g. Tissue Region).
+\item{top_level_groups}{string to filter top level (e.g. Tissue Region).
 Inherits from \code{auto_generate_DE_results()}}
 
 \item{log2_norm_data}{log2 Normalised data from current call to DESEQ2 (NOT normalised data from WHOLE dataset)}

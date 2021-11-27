@@ -21,7 +21,7 @@
 #' @param results_contrast_factor Name of Factor from
 #'   \code{DESeq2_formula_design} that is used to generate pairwise
 #'   comparisons.e.g. Region_Diet
-#' @param column_of_samples non-string. Name of \code{colData} column with
+#' @param samples_colname non-string. Name of \code{colData} column with
 #'   sample names (used for filtering).
 #'
 #' @return Returns a list of dataframes, with each pairwise comparison having
@@ -37,12 +37,12 @@ calculate_RIF <- function(DE_data_list,
                           all_genes_as_TF = FALSE,
                           colData,
                           results_contrast_factor,
-                          column_of_samples){
+                          samples_colname){
 
 
   #Helpers
-  col_of_sam <- rlang::enquo(column_of_samples)
-  column_of_samples_string <- col_of_sam %>% rlang::as_label()
+  col_of_sam <- rlang::enquo(samples_colname)
+  samples_colname_string <- col_of_sam %>% rlang::as_label()
   cf <- rlang::enquo(results_contrast_factor)
 
   col_annot <- colData %>%
@@ -50,17 +50,24 @@ calculate_RIF <- function(DE_data_list,
     dplyr::select(.data$sample_names, {{ cf }})
 
 
-  f_by_top_level <-
-    function(DE_list_one_level, cf, col_of_sam){
+  # Define top level names
+  top_level_names_DE_data_list <-
+    names(DE_data_list) %>%
+    stringr::str_extract(pattern = "^[^_]*")
 
-      list_of_DE_tables <- DE_list_one_level
+
+  f_by_top_level <-
+    function(.x, .y, cf, col_of_sam){
+
+      list_of_DE_tables <- .x
+      top_level_name <- .y
 
       ################################################################# #
-      # Collect top_level_name from current iteration
+      # Collect top_level_names from current iteration
       #
-      top_level_name <- names(list_of_DE_tables) %>%
-        stringr::str_extract(pattern = "^[^_]*") %>%  #match 0 or more characters from beginning of string up to the first _
-        unique()
+      # top_level_name <- names(list_of_DE_tables) %>%
+      #   stringr::str_extract(pattern = "^[^_]*") %>%  #match 0 or more characters from beginning of string up to the first _
+      #   unique()
 
       message(crayon::black$bgCyan$bold(paste("\n\n ******************* Start of - ",
                                               top_level_name,
@@ -90,7 +97,7 @@ calculate_RIF <- function(DE_data_list,
           ################################################################ #
           #Filter normalised expression table for current iteration
           #
-          columns_to_select <- coldata_sub[[column_of_samples_string]]
+          columns_to_select <- coldata_sub[[samples_colname_string]]
 
           norm_exp_sub <-
             norm_exp_data %>%
@@ -214,6 +221,7 @@ calculate_RIF <- function(DE_data_list,
 
             #Annotate results
             RIF_out <- RIF_out %>%
+              dplyr::left_join(gene_annotations, by = c("TF" = "gene_ensembl"))
 
             message(crayon::green("Running RIF... COMPLETE"))
 
@@ -237,17 +245,18 @@ calculate_RIF <- function(DE_data_list,
                                               "******************* \n\n")))
       return(out)
     }
-  out2 <- purrr::map(.x = DE_data_list,
+  out2 <- purrr::map2(.x = DE_data_list,
+                      .y = top_level_names_DE_data_list,
                      .f = f_by_top_level,
                      cf = cf,
                      col_of_sam = col_of_sam)
 
   ###################################### #
   # Rename output
-  top_names <- names(out2) %>%
-    stringr::str_extract(pattern = "^[^_]*")
-  new_names <- paste0(top_names, " - RIF")
-
+ # top_names <- names(DE_data_list) %>%
+  #stringr::str_extract(pattern = "^[^_]*")
+  new_names <- paste0(top_level_names_DE_data_list, " - RIF")
   out2 <- setNames(out2, new_names)
+
   return(out2)
 }

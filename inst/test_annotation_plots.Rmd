@@ -122,17 +122,35 @@ DE_dataframes_list <-
   
 #DE_dataframes_list %>% names()
 
+
+f_test <- function(DE_data){
+  print(names(DE_data))
+  f2 <- function(x){
+    print("test")
+    print(names(x))
+  }
+  purrr::map(DE_data, f2)
+   top_names <- names(DE_data) %>%
+    stringr::str_extract(pattern = "^[^_]*")
+   print(top_names)
+}
+
+test_out <- f_test(DE_dataframes_list)
+
+
+
 RIF_output <- 
   calculate_RIF(DE_data_list = DE_dataframes_list,
                 TFs = NA,
                 norm_exp_data = full_norm$Whole_data_normalisation_output$normalised_data$vsd,
                 colData = SummarizedExperiment::colData(test_data),
                 results_contrast_factor = Region_Diet,
-                column_of_samples = sample_names,
-                all_genes_as_TF = TRUE
+                samples_colname = sample_names,
+                all_genes_as_TF = TRUE,
+                gene_annotations = test_annot
               )
 
-RIF_output$`RUM - RIF`$`RUM_HCP.LP.UMEI vs RUM_LCP.LP.UMEI`%>% View()
+RIF_output$`LIV - RIF`$`LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI` %>% View()
 
 #Collapse into 1 large dataframe
 # RIF_bound<- 

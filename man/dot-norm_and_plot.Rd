@@ -5,18 +5,18 @@
 \title{Generate normalised counts and QC plots}
 \usage{
 .norm_and_plot(
-  top_level_filter,
+  top_level_groups,
   dds_object,
   gene_annotations,
   export_tables = FALSE,
   export_dir = "./outputs/",
   results_contrast_factor,
-  top_level_name = NA,
+  top_level_colname = NA,
   whole_data_normalisation = FALSE
 )
 }
 \arguments{
-\item{top_level_filter}{inherits from \code{auto_generate_DE_results()}}
+\item{top_level_groups}{inherits from \code{auto_generate_DE_results()}}
 
 \item{dds_object}{DESeq2 data object, inherits from
 \code{auto_generate_DE_results()}}
@@ -33,7 +33,7 @@ this specificed directory doesn't exist, it will be created.}
 \item{results_contrast_factor}{inherits from
 \code{auto_generate_DE_results()}}
 
-\item{top_level_name}{inherits from \code{auto_generate_DE_results()}.
+\item{top_level_colname}{inherits from \code{auto_generate_DE_results()}.
 non-string. Name of \code{colData} column with top level factor, which is
 normally Tissue Region.}
 

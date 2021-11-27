@@ -91,7 +91,7 @@ test_data <-
     colData = coldata)
 
 #subset columns to be every n, to make testing quicker
-test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
+#test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
 
 
 ```
@@ -103,31 +103,27 @@ The function `auto_generate_DE_results()` is iterated over using `purrr::map()`.
 For details on variables, see `?auto_generate_DE_results`.
 For multiple iterations it can take a long time to run. E.g. 6 Regions x 5 treatments of 8 samples (total n = 240) = ~30mins
 ```{r}
-#get all top_level_filter options (which is parsed as .x in call to map; see ?auto_generate_DE_results)
-regions <- test_data$Region %>% unique() %>% as.list()
+
+# regions <- coldata$Region %>% unique()
+
+DE_out <- 
+  auto_generate_DE_results(se_data = test_data,
+                           top_level_groups = c("ARC", "LIV"),
+                           top_level_colname = Region,
+                           sample_colname = sample_names,
+                           samples_to_remove = NA,
+                           DESeq2_formula_design = ~Region_Diet,
+                           rowSums_filter = 10, #for dds filtering
+                           results_contrast_factor = Region_Diet,
+                           results_combinations = NA,
+                           use_IHW_filtering = TRUE,
+                           alpha = 0.05,
+                           gene_annotations = test_annot,
+                           export_tables = FALSE,
+                           export_dir = "./outputs/",
+                           whole_data_normalisation = FALSE)
 
 
-DE_out1 <- 
-  purrr::map(.x = regions[5],
-             .f = auto_generate_DE_results, 
-             se_data = test_data,
-             top_level_name = Region,
-             column_of_samples = sample_names,
-             samples_to_remove = NA,
-             DESeq2_formula_design = ~Region_Diet,
-             rowSums_filter = 10, #for dds filtering
-             results_contrast_factor = Region_Diet,
-             results_combinations = NA,
-             use_IHW_filtering = TRUE,
-             alpha = 0.05,
-             gene_annotations = test_annot,
-             export_tables = TRUE,
-             export_dir = "./outputs/",
-             whole_data_normalisation = FALSE)
-
-#DE_out %>% str(max.level = 3)
-#unlist to take away the un-named, top layer. Gives access via $
-DE_out <- DE_out1 %>% unlist(recursive = FALSE)
 
 ```
 
@@ -368,10 +364,14 @@ samp_dist_list <-
 
 # 8. Generate whole dataset normalised counts
 ```{r}
+
+test_data2 <- test_data %>% SummarizedExperiment::subset(
+  select = SummarizedExperiment::colData(test_data)[["Region"]] %in% c("ARC", "LIV"))
+
 full_norm <- 
-  auto_generate_DE_results(se_data = test_data,
-                           top_level_name = Region,
-                           column_of_samples = sample_names,
+  auto_generate_DE_results(se_data = test_data2,
+                           top_level_colname = Region,
+                           sample_colname = sample_names,
                            samples_to_remove = NA,
                            DESeq2_formula_design = ~Region_Diet,
                            gene_annotations = test_annot,
@@ -381,6 +381,13 @@ full_norm <-
 
 
 ```
+
+# boxplot cooks distance
+```{r}
+full_norm$Whole_data_normalisation_output$boxplot_cooks_distance
+```
+
+
 
 ```{r}
 full_norm$Whole_data_normalisation_output$normalised_data$vsd

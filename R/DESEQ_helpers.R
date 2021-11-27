@@ -274,7 +274,7 @@ make_pairwise_combinations <-
     unique_contrast_levels <-
       coldata %>%
       as.data.frame() %>%
-     # dplyr::filter({{ top_level_column_name }} == top_level_filter) %>%
+     # dplyr::filter({{ top_level_column_name }} == top_level_groups) %>%
       magrittr::extract2(contrast_factor) %>%
       as.character() %>% #removes factors if using colData(dds) as input
       unique()
