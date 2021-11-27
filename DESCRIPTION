@@ -41,9 +41,5 @@ Depends:
     S4Vectors
 LazyData: true
 Suggests: 
-    CeTF,
-    knitr,
-    rmarkdown
-VignetteBuilder:
-    knitr
+    CeTF
 
