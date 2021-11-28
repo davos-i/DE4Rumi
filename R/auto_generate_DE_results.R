@@ -1,17 +1,15 @@
 #' Auto Generate DE Results
 #'
-#' Wrapper to DESeq2 that iterates over each element of
-#' \code{top_level_groups} and conducts pairwise comparisons, QC plots and other
-#' analysis. Can also normalise data over whole dataset
-#' (ignoring \code{top_level_groups})
+#' Wrapper to DESeq2 that iterates over each element of \code{top_level_groups}
+#' and conducts pairwise comparisons, QC plots and other analysis. Can also
+#' normalise data over whole dataset (ignoring \code{top_level_groups})
 #'
-#' This wrapper uses a call to \code{.calculate_DESEQ_results} which determines
-#' all possible pairwise comparisons, based on the \code{top_level_colname}
-#' attribute which is also a column of \code{colData}. Defaults to use a formula
-#' design of \code{~Region_Diet}, but could be changed to be \code{~Region +
-#' Diet} (see \code{vignette("DESeq2")})but the pairwise comparions are
-#' generated with \code{results_contrast_factor}, which must be one of the
-#' elements of the formula.
+#' This wrapper determines all possible pairwise comparisons, based on the
+#' \code{top_level_colname} attribute which is also a column of \code{colData}.
+#' Defaults to use a formula design of \code{~Region_Diet}, but could be changed
+#' to be \code{~Region + Diet} (see \code{vignette("DESeq2")}) but the pairwise
+#' comparisons are generated with \code{results_contrast_factor}, which must be
+#' one of the elements of the formula.
 #'
 
 #' @param se_data SummarizedExperiment object of experimental data.
@@ -38,11 +36,11 @@
 #'   \code{?DESeq2::results} for requirements. Defaults to \code{NA}.
 #' @param use_IHW_filtering logical. Should Independent Hypothesis Weighting be
 #'   used when calculating results? \code{TRUE}, the default, indicates yes. See
-#'   \code{?IHW::ihw} or \code{vignette("DESeq2")} for more details.
+#'   [IHW::ihw] or \code{vignette("DESeq2")} for more details.
 #' @param alpha numeric. What is the p-value threshold to be used for
-#'   determining significance. Used in call to \code{DESeq2::results()} and
+#'   determining significance. Used in call to [DESeq2::results] and
 #'   others.
-#' @param gene_annotations Output from call to \code{annotate_gene_ensembl()}
+#' @param gene_annotations Output from call to [annotate_gene_ensembl]
 #' @param export_tables logical. \code{TRUE} indicates the normalised counts
 #'   tables, both vsd and log2norm, annotated with gene names and descriptions,
 #'   are exported to \code{"./outputs/normalised_counts/"}
@@ -55,7 +53,7 @@
 #' @return returns a named, nested list (list of lists) with: \itemize{
 #' \item dds_wald_object \item boxplot_cooks_distance \item DESeq2_res_object
 #' \item pairwise_plots \item overall_plots \item normalised_data \item PIF
-#' \item DE_sig_PIF_df}
+#' \item DE_by_PIF_df}
 #'
 #' @export
 
@@ -304,7 +302,7 @@ function(se_data,
 
           openxlsx::write.xlsx(DE_annotated2,
                                file = paste0(export_dir,
-                                             "DE tables - SPLIT - ",
+                                             "DE genes sorted by PIF - SPLIT by pairwise - ",
                                              top_level_group_individual,
                                              " - ",
                                              format(Sys.time(), "%Y%m%d_%H%M") ,
@@ -332,7 +330,7 @@ function(se_data,
                          overall_plots = overall_plots_list,
                          normalised_data = normalised_data_list,
                          PIF = PIF_out,
-                         DE_sig_PIF_df = DE_annotated)
+                         DE_by_PIF_df = DE_annotated)
 
 
         #Add to a list with it's own name identifying it by top_level_group_individual (region)

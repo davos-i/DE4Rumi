@@ -72,6 +72,15 @@ usethis::use_import_from("rlang", ":=")
 #It's handy to have raw data that is compiled to a .RData format for formal use
 
 
+#
+# library(pkgndep)
+#  pkg = pkgndep::pkgndep("DE4Rumi")  # if the package is already installed
+#  plot(pkg)
+#  pkgndep::required_dependency_packages(pkg)
+#  pkgndep::("DE4Rumi") %>% View()
+#
+#  usethis::use_github_actions()
+
 
 #added use of pipe internally with
 usethis::use_pipe()

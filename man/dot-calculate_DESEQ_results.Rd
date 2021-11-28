@@ -24,15 +24,15 @@ that will be contrasted. Should match one of the factors in DESeq2 design
 (e.g. "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI")}
 
 \item{alpha}{numeric. What is the p-value threshold to be used for
-determining significance. Used in call to \code{DESeq2::results()} and
+determining significance. Used in call to \link[DESeq2:results]{DESeq2::results} and
 others.}
 
 \item{use_IHW_filtering}{Logical. Inherits from larger function. If \code{TRUE}
-it will use a call to \code{IHW::ihw()} when making results.}
+it will use a call to \code{\link[IHW:ihw.default]{IHW::ihw()}} when making results.}
 }
 \value{
 Returns a named list with each element the results object output from
-call to \code{DESeq2::results()}
+call to \link[DESeq2:results]{DESeq2::results}
 }
 \description{
 Internal function to generate a list of DESEQ2 result objects for multiple
@@ -40,7 +40,7 @@ pairwise comparisons
 }
 \details{
 This takes a dds object, which is pre-filtered to only contain one top-level
-(e.g. Tissue Region) and uses the \code{make_pairwise_combinations} function
+(e.g. Tissue Region) and uses the \link{make_pairwise_combinations} function
 to generate all possible pairwise combinations, then use this to make all res
 objects. It is designed to be used within larger function to automate DESeq2.
 }

@@ -16,36 +16,33 @@
 )
 }
 \arguments{
-\item{top_level_group_individual}{inherits from \code{auto_generate_DE_results()}}
+\item{top_level_group_individual}{inherits from \link{auto_generate_DE_results}}
 
-\item{dds_object}{DESeq2 data object, inherits from
-\code{auto_generate_DE_results()}}
+\item{dds_object}{DESeq2 data object, inherits from \link{auto_generate_DE_results}}
 
-\item{gene_annotations}{Output from \code{annotate_gene_ensembl()}}
+\item{gene_annotations}{Output from \link{annotate_gene_ensembl}}
 
 \item{export_tables}{logical. \code{TRUE} indicates the normalised counts
 tables, both vsd and log2norm, annotated with gene names and descriptions,
-are exported to \code{"./outputs/normalised_counts/"})}
+are exported to \code{expor_dir}}
 
 \item{export_dir}{string. "./" indicates relative to working directory. IF
-this specificed directory doesn't exist, it will be created.}
+this specified directory doesn't exist, it will be created.}
 
-\item{results_contrast_factor}{inherits from
-\code{auto_generate_DE_results()}}
+\item{results_contrast_factor}{inherits from \link{auto_generate_DE_results}}
 
-\item{top_level_colname}{inherits from \code{auto_generate_DE_results()}.
+\item{top_level_colname}{inherits from \link{auto_generate_DE_results}.
 non-string. Name of \code{colData} column with top level factor, which is
 normally Tissue Region.}
 
-\item{whole_data_normalisation}{inherits from
-\code{auto_generate_DE_results()}.}
+\item{whole_data_normalisation}{inherits from \link{auto_generate_DE_results}}
 }
 \value{
 returns a list of 1) heatmap_plot, PCA_plot and Sample distances
 heatmap; and 2) normalised vsd and normalised log2norm dataframes.
 }
 \description{
-Internal function to use within \code{auto_generate_DE_results()}.
+Internal function to use within \link{auto_generate_DE_results}.
 }
 \details{
 This function generates normalised count tables, using the variance

@@ -7,18 +7,19 @@
 make_pairwise_combinations(coldata, contrast_factor)
 }
 \arguments{
-\item{coldata}{either a dataframe or a call to colData() on a DESeqDataSet}
+\item{coldata}{either a dataframe or a call to \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment::colData}
+on a DESeqDataSet}
 
 \item{contrast_factor}{string. Name of column containing treatments to contrast}
 }
 \description{
-\code{make_pairwise_combinations()} creates a list of all possible unique
+Creates a list of all possible unique
 combinations of treatment comparisons
 }
 \details{
 This takes the colData from a dds object and finds the column name defined by
 \code{contrast_factor} to generate all unique treatment names as input to a call
-to \code{combn()} to get all unique pairwise comparisons.
+to \link[utils:combn]{utils::combn} to get all unique pairwise comparisons.
 Returns a list of characters of length 2. \cr
 e.g. \code{[1] "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI"}
 }

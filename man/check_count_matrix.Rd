@@ -19,7 +19,7 @@ include and entry called "gene_ensembl", as this is automatically detected.}
 }
 \value{
 Returns a dataframe of \code{count_data} with columns ordered to
-match names in the \code{column_with _col_names} column of \code{colData}.
+match names in the \code{column_with_col_names} column of \code{colData}.
 }
 \description{
 \code{check_count_matrix()} returns messages to the console to determine if

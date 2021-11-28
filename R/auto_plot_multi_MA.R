@@ -3,12 +3,12 @@
 #' Plot all MA plots automatically by iterating over a list of PIF dataframes,
 #' naming each plot
 #'
-#' Wrapper for \code{plot_custom_MA()} that uses sensible defaults and naming,
+#' Wrapper for [plot_custom_MA] that uses sensible defaults and naming,
 #' but is customisable.
 #'
 #'
-#' @param PIF_list List of dataframe produced by a call to
-#'   \code{auto_generate_DE_results()}
+#' @param PIF_list List of dataframes produced by a call to
+#'   [auto_generate_DE_results]
 #' @param list_plot_titles A character vector or list of names in the same order
 #'   as \code{names(PIF_list)}. If NA (default) names are automatically
 #'   generated from  \code{names(PIF_list)}.
@@ -19,8 +19,8 @@
 #' @param pdf_width number. Width of each pdf page in mm.
 #' @param export_dir string. Path directory where TIFF and PDF are exported to,
 #'   if exported.
-#' @param ... Other arguments parsed to \code{plot_custom_MA()}. \cr See
-#'   \code{?plot_custom_MA} for details of available arguments.
+#' @param ... Other arguments parsed to [plot_custom_MA]. \cr See
+#'   [plot_custom_MA] for details of available arguments.
 #'
 #' @return Returns a named list of ggplot objects. Also exports plots to .TIFF
 #'   or .PDF, if requested.

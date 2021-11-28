@@ -16,8 +16,8 @@ auto_plot_multi_MA(
 )
 }
 \arguments{
-\item{PIF_list}{List of dataframe produced by a call to
-\code{auto_generate_DE_results()}}
+\item{PIF_list}{List of dataframes produced by a call to
+\link{auto_generate_DE_results}}
 
 \item{list_plot_titles}{A character vector or list of names in the same order
 as \code{names(PIF_list)}. If NA (default) names are automatically
@@ -35,8 +35,8 @@ each MA plot?}
 \item{export_dir}{string. Path directory where TIFF and PDF are exported to,
 if exported.}
 
-\item{...}{Other arguments parsed to \code{plot_custom_MA()}. \cr See
-\code{?plot_custom_MA} for details of available arguments.}
+\item{...}{Other arguments parsed to \link{plot_custom_MA}. \cr See
+\link{plot_custom_MA} for details of available arguments.}
 }
 \value{
 Returns a named list of ggplot objects. Also exports plots to .TIFF
@@ -47,6 +47,6 @@ Plot all MA plots automatically by iterating over a list of PIF dataframes,
 naming each plot
 }
 \details{
-Wrapper for \code{plot_custom_MA()} that uses sensible defaults and naming,
+Wrapper for \link{plot_custom_MA} that uses sensible defaults and naming,
 but is customisable.
 }

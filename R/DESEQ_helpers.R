@@ -26,7 +26,7 @@ utils::globalVariables("where")
 #'    include and entry called "gene_ensembl", as this is automatically detected.
 #'
 #' @return Returns a dataframe of \code{count_data} with columns ordered to
-#' match names in the \code{column_with _col_names} column of \code{colData}.
+#' match names in the \code{column_with_col_names} column of \code{colData}.
 #'
 #' @export
 
@@ -122,7 +122,7 @@ check_count_matrix <-
 
 #' Subset colData automatically
 #'
-#' Run if \code{check_count_matrix()} warns that there are entries in colData
+#' Run if [check_count_matrix] warns that there are entries in colData
 #' that do not match columns in counts_matrix.
 #'
 #' Matches the entries in the \code{column_with_col_names} in \code{colData} to
@@ -184,7 +184,7 @@ function(count_data,
 
 #'Collects human equivalent gene names and descriptions
 #'
-#'\code{annotate_gene_ensembl} creates a dataframe of human equivalent gene
+#'Creates a dataframe of human equivalent gene
 #'names and description souced from gprofiler2::gconvert.
 #'
 #'The dataframe produced by this is used for downstream annotation of files. It
@@ -252,16 +252,17 @@ annotate_gene_ensembl <- function(data,
 
 #'Make pairwise combinations
 #'
-#'\code{make_pairwise_combinations()} creates a list of all possible unique
+#'Creates a list of all possible unique
 #'combinations of treatment comparisons
 #'
 #'This takes the colData from a dds object and finds the column name defined by
 #'\code{contrast_factor} to generate all unique treatment names as input to a call
-#'to \code{combn()} to get all unique pairwise comparisons.
+#'to [utils::combn] to get all unique pairwise comparisons.
 #'Returns a list of characters of length 2. \cr
 #'e.g. \code{[1] "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI"}
 #'
-#'@param coldata either a dataframe or a call to colData() on a DESeqDataSet
+#'@param coldata either a dataframe or a call to [SummarizedExperiment::colData]
+#' on a DESeqDataSet
 #'@param contrast_factor string. Name of column containing treatments to contrast
 #'
 #'
@@ -295,7 +296,7 @@ make_pairwise_combinations <-
 #'pairwise comparisons
 #'
 #'This takes a dds object, which is pre-filtered to only contain one top-level
-#'(e.g. Tissue Region) and uses the \code{make_pairwise_combinations} function
+#'(e.g. Tissue Region) and uses the [make_pairwise_combinations] function
 #'to generate all possible pairwise combinations, then use this to make all res
 #'objects. It is designed to be used within larger function to automate DESeq2.
 #'
@@ -307,15 +308,14 @@ make_pairwise_combinations <-
 #'@param combinations Either NA (default) or a list with each element 2 strings
 #'(e.g. "LIV_HCP-HP-UMEI" "LIV_LCP-LP-UMEI")
 #'@param alpha numeric. What is the p-value threshold to be used for
-#'   determining significance. Used in call to \code{DESeq2::results()} and
+#'   determining significance. Used in call to [DESeq2::results] and
 #'   others.
 #'@param use_IHW_filtering Logical. Inherits from larger function. If \code{TRUE}
-#'it will use a call to \code{IHW::ihw()} when making results.
+#'it will use a call to [IHW::ihw()] when making results.
 #'
 #'@return Returns a named list with each element the results object output from
-#'call to \code{DESeq2::results()}
+#'call to [DESeq2::results]
 #'
-
 
 
 .calculate_DESEQ_results <-
@@ -383,14 +383,56 @@ make_pairwise_combinations <-
   }
 
 
-#'Title
+#'Make SE object
 #'
-#'\code{words_to_look_like_code} short description
+#'Takes gene expression count data, gene annotations and column data and returns
+#'a SummarizedExperiment object to use with
+#'\code{\link{auto_generate_DE_results}}
 #'
-#'long description
+#'\code{counts_data} and \code{colData} inputs to this function should be
+#'pre-checked using \code{\link{check_count_matrix}}
 #'
-#'@param data dataframe.
-#'@return
+#'@param counts_data Dataframe of gene expression counts data.
+#'@param gene_annotations Dataframe with columns "gene_ensembl", "gene_name" and
+#'  "description", returns from a call to \code{\link{annotate_gene_ensembl}}
+#'@param colData Dataframe of column annotation data. each column should be
+#'  metadata about the sample/animal.
+#'
+#'@return Returns a SummarizedExperiment object of experimental data.
 #'
 #'
 #'@export
+#'
+make_summarized_experiment_object <-
+  function(counts_data,
+           gene_annotations,
+           colData){
+
+    SummarizedExperiment::SummarizedExperiment(
+      assays = counts_data %>%
+        tibble::column_to_rownames(var = "gene_ensembl") %>%
+        as.matrix(),
+      rowData = gene_annotations,
+      colData = colData)
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

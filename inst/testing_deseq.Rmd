@@ -82,16 +82,16 @@ test_annot <-
 TO DO: make a wrapper for this with specific checks of data / auto matrix
 ```{r}
 
-test_data <-
-  SummarizedExperiment::SummarizedExperiment(
-    assays = cts_filtered %>% 
-      tibble::column_to_rownames(var = "gene_ensembl") %>% 
-      as.matrix(),
-    rowData = test_annot, 
-    colData = coldata)
+
+test_data <- 
+make_summarized_experiment_object(counts_data = cts_filtered,
+                                  gene_annotations = test_annot, 
+                                  colData = coldata)
+
+
 
 #subset columns to be every n, to make testing quicker
-#test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
+test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
 
 
 ```
@@ -144,6 +144,112 @@ saveRDS(DE_out, file = "./outputs/DE_out_file_testing.rds")
 ```
 
 # 6. Accessing Results
+
+## 6.a. Accessor Functions
+Firstly, the use of accessor functions that help to extract specific data are shown
+below. For plots, these also 'view' the plots, but is generally only useful for
+a code chunk that can show all plots, such as in this document 
+(rather than if using in a .R file format). Note that the size of these plots is
+dictated by the `fig.width = ` in the `{r }` at beginning of each code chunk. 
+
+These functions return a named list of 1 level. This means that individual 
+elements of the list can be accessed by using $. For some plot types, viewing the 
+individual plot using the $ will need to be done by copying to the Console. Do this
+if the plot does not appear below code chunk.
+
+A description of more advanced access techniques is shown in next section.
+
+### PIF Tables
+All genes, sorted by PIF value.
+This function also allows searching to return only specified groups. 
+```{r}
+PIF_tables_ALL <- GET_PIF_df(auto_DE_output = DE_out)
+
+PIF_tables_ARC_and_LIV <- GET_PIF_df(auto_DE_output = DE_out,
+                                  search_top_level = c("ARC", "LIV"))
+
+rm(PIF_tables_ALL)
+rm(PIF_tables_ARC_and_LIV)
+```
+
+### DE tables, sorted by PIF
+Showing only significant genes, sorted on absolute PIF value.
+This function also allows searching to return only specified groups. 
+```{r}
+DE_tables_ALL <- GET_DE_by_PIF_df(auto_DE_output = DE_out)
+
+DE_tables_ARC_and_LIV <- GET_DE_by_PIF_df(auto_DE_output = DE_out,
+                                          search_top_level = c("ARC", "LIV"))
+
+rm(DE_tables_ALL)
+rm(DE_tables_ARC_and_LIV)
+```
+
+#### Individual normalised counts tables
+Note - these are largely not useful. See ?GET_normalised_counts
+Searches are not required, and either or both searches can be used.
+```{r}
+norm_ARC_log2 <- GET_normalised_data(auto_DE_output = DE_out, 
+                                     search_top_level = "ARC",
+                                     vst_or_log2 = "Log2")
+```
+
+### Overall Plots
+
+#### Boxplot of cooks distances
+This has own function compared to others below. This is useful for both DE 
+comparisons and when whole data normalisation has been run.
+```{r}
+pairwise_boxplots <- GET_boxplot_cooks_distance(auto_DE_output = DE_out)
+```
+
+#### PCA
+```{r fig.width = 8}
+PCA_plots <- GET_overall_plots(auto_DE_output = DE_out,
+                   type = "PCA")
+
+#PCA_plots$ARC_DESeq2_Output
+```
+
+#### Heatmap
+```{r fig.width = 8}
+heatmap_plots <- GET_overall_plots(auto_DE_output = DE_out,
+                   type = "heatmap")
+
+```
+
+#### Sample distances
+```{r fig.width = 8}
+sample_dist_plots <- GET_overall_plots(auto_DE_output = DE_out,
+                   type = "sample_distances")
+```
+
+### Pairwise plots
+
+#### Pvalue Histrograms
+```{r fig.width = 10}
+
+pvalue_histograms <- GET_pairwise_plots(auto_DE_output = DE_out,
+                                        type = "Pvalue", 
+                                        search_top_level = c("ARC", "LIV"))
+
+```
+
+
+
+#### MA Plots (for QC)
+These are not the same MA plots which are generated with PIF, DE and annotations. This is rough plots from DESeq2.
+```{r fig.width = 10}
+
+MA_plots <- GET_pairwise_plots(auto_DE_output = DE_out,
+                               type = "MA",
+                               search_top_level = c("ARC"))
+
+```
+
+
+
+## 6.b. Manually accessing results
 Overall, results can be accessed by using $ notation to navigate through the list.
 Search, unlisting and reduction techniques help to select data of interest.
 
@@ -189,42 +295,6 @@ DE_out %>%
 ```
 
 
-## DE
-These results are exported to individual worksheets in an excel file if export_tables = TRUE was selected in original run. However, they can also be accessed within R using the following techniques.
-### Dataframes / tables
-#### DE tables
-These tables include only the genes <= alpha (which is default 0.05),sorted on absolute PIF value
-```{r}
-#Select DE tables to a list with 1 layer
-DE_dataframes <- 
-  DE_out %>% 
-  purrr::map("DE_sig_PIF_df") %>% 
-  unlist(recursive = FALSE)
-
-#access individual tables by using $ 
-#e.g.
-DE_dataframes %>% str(list.len = 4)
-
-#Can also search with a string e.g. "ARC"
-ARC_DE  <- DE_dataframes %>% 
-  {.[grepl("ARC", names(.))]} 
-
-ARC_DE$`ARC_DESeq2_Output.ARC_HCP.HP.RMEI vs ARC_LCP.LP.UMEI` %>% View()
-
-```
-
-#### PIF tables
-```{r}
-PIF_dataframes <- 
-  DE_out %>% 
-  purrr::map("PIF") %>%   
-  unlist(recursive = FALSE)
-
-  
- #access individual tables by using $ 
-#e.g.
-PIF_dataframes$`ARC_DESeq2_Output.PIF - ARC_HCP.HP.UMEI vs ARC_LCP.LP.UMEI` %>% head()
-```
 
 
 ### Results objects
@@ -248,48 +318,6 @@ DE_results_objects$`LIV_DESeq2_Output.LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI`
 DE_out$ARC_DESeq2_Output$pairwise_plots %>% names()
 ```
 
-#### Pvalue Histrograms
-Some plots are stored in different formats, and might require a small function to view them.
-Note that the plots are visualised below this code chunk. The width of the figure can be adjusted with the `fig.width = ` in the first line of code chunk.
-```{r fig.width = 10}
-
-#Store pvalue histograms into a new object
-pvalue_plots_list <- 
-  DE_out %>% 
-  purrr::map("pairwise_plots") %>%  
-  purrr::map('Pvalue_histogram') %>% 
-  unlist(recursive = FALSE)
-  
-#View plots (Returned in output below this code chunk)
-
-  pvalue_plots_list[1:20] %>%  #showing first 20 only
-  purrr::map(function(x){
-    print(x)
-    plot.new()
-    dev.off()
-    })
-```
-#### MA Plots (for QC)
-These are not the same MA plots which are generated with PIF, DE and annotations. This is rough plots from DESeq2.
-```{r fig.width = 10}
-
-#Store pvalue histograms into a new object
-MA_plots_list <- 
-  DE_out %>% 
-  purrr::map("pairwise_plots") %>%  
-  purrr::map('MA_plots') %>% 
-  unlist(recursive = FALSE)
-  
-
-#View plots (Returned in output below this code chunk)
-
-  MA_plots_list[10:20] %>%  #showing 10 only
-  purrr::map(function(x){
-    print(x)
-    plot.new()
-    dev.off()
-    })
-```
 
 ### Overall Plots
 ```{r}

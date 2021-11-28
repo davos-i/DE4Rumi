@@ -27,7 +27,7 @@ of "http://biit.cs.ut.ee/gprofiler". \cr\cr All available archives at:
 https://biit.cs.ut.ee/gprofiler/page/archives}
 }
 \description{
-\code{annotate_gene_ensembl} creates a dataframe of human equivalent gene
+Creates a dataframe of human equivalent gene
 names and description souced from gprofiler2::gconvert.
 }
 \details{

@@ -20,7 +20,7 @@ that matches names of columns in \code{count_data}.}
 Returns the filtered dataframe (to be used downstream).
 }
 \description{
-Run if \code{check_count_matrix()} warns that there are entries in colData
+Run if \link{check_count_matrix} warns that there are entries in colData
 that do not match columns in counts_matrix.
 }
 \details{

@@ -118,25 +118,9 @@ MA_plots_out$`MA Plot of LIV_HCP.HP.UMEI vs LIV_LCP.HP.UMEI`
 # access data
 DE_dataframes_list <- 
   DE_out %>% 
-  purrr::map("DE_sig_PIF_df")
+  purrr::map("DE_by_PIF_df")
   
 #DE_dataframes_list %>% names()
-
-
-f_test <- function(DE_data){
-  print(names(DE_data))
-  f2 <- function(x){
-    print("test")
-    print(names(x))
-  }
-  purrr::map(DE_data, f2)
-   top_names <- names(DE_data) %>%
-    stringr::str_extract(pattern = "^[^_]*")
-   print(top_names)
-}
-
-test_out <- f_test(DE_dataframes_list)
-
 
 
 RIF_output <- 

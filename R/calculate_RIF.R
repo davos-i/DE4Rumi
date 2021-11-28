@@ -8,16 +8,16 @@
 #'
 #'
 #' @param DE_data_list A list of named lists containing DE dataframes. Output of
-#'   \code{auto_generate_DE_results} that has been prepared by calling
-#'   \code{purrr::map(DE_out,"DE_sig_PIF_df")}
+#'   [auto_generate_DE_results] that has been prepared by calling
+#'   \code{purrr::map(DE_out,"DE_by_PIF_df")}
 #' @param TFs character vector of Transcription Factors to use for RIF
 #'   calculations. Optional and only used if \code{all_genes_as_TF = FALSE}
 #' @param norm_exp_data Whole data normalisation output - use VST norm.
-#' @param gene_annotations Output from call to \code{annotate_gene_ensembl()}
+#' @param gene_annotations Output from call to [annotate_gene_ensembl]
 #' @param all_genes_as_TF Logical. Should all genes (with row mean expression >
 #'   2) be used as possible TFs in RIF?
 #' @param colData coldata normally accessed via a call to
-#'   \code{SummarizedExperiment::colData()}
+#'   [SummarizedExperiment::colData]
 #' @param results_contrast_factor Name of Factor from
 #'   \code{DESeq2_formula_design} that is used to generate pairwise
 #'   comparisons.e.g. Region_Diet
