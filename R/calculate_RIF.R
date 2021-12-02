@@ -7,9 +7,8 @@
 #'
 #'
 #'
-#' @param DE_data_list A list of named lists containing DE dataframes. Output of
-#'   [auto_generate_DE_results] that has been prepared by calling
-#'   \code{purrr::map(DE_out,"DE_by_PIF_df")}
+#' @param DE_output object (class = list) returned from a call to
+#'   [auto_generate_DE_results]
 #' @param TFs character vector of Transcription Factors to use for RIF
 #'   calculations. Optional and only used if \code{all_genes_as_TF = FALSE}
 #' @param norm_exp_data Whole data normalisation output - use VST norm.
@@ -30,7 +29,7 @@
 #'
 #' @export
 
-calculate_RIF <- function(DE_data_list,
+calculate_RIF <- function(DE_output,
                           TFs,
                           norm_exp_data,
                           gene_annotations,
@@ -39,6 +38,8 @@ calculate_RIF <- function(DE_data_list,
                           results_contrast_factor,
                           samples_colname){
 
+
+  DE_data_list <- DE_output %>% purrr::map("DE_by_PIF_df")
 
   #Helpers
   col_of_sam <- rlang::enquo(samples_colname)
@@ -59,7 +60,7 @@ calculate_RIF <- function(DE_data_list,
   f_by_top_level <-
     function(.x, .y, cf, col_of_sam){
 
-      list_of_DE_tables <- .x
+      list_of_DE_tables <<- .x
       top_level_name <- .y
 
       ################################################################# #
