@@ -8,17 +8,22 @@
 #' @param list_of_objects List of objects that's named. This is what is
 #'   searched. Inherited from other functions.
 #' @param search_term character vector of top_level_groups (see
-#'   [auto_generage_DE_results])to search for, returning only list entries from
+#'   [auto_generate_DE_results]) to search for, returning only list entries from
 #'   these groups. e.g. \code{c("ARC","LIV")}. Inherited from other functions.
+#'  @param patern_extract_top_level string representing a regex match to return
+#'  the names of the top level. Default works for all accessors from DE output.
+#'  RIF requires unique.
 #'
 #' @return Returns a filtered list.
 
 .search_list_helper <-
-  function(list_of_objects, search_term){
+  function(list_of_objects,
+           search_term,
+           pattern_extract_top_level = "^[^_]*"){
 
     #get top level name options and check search_top_level is one of them
     names_in_list <-  names(list_of_objects) %>%
-      stringr::str_extract(pattern = "^[^_]*")
+      stringr::str_extract(pattern = )
 
     if(is.null(search_term)){
       return(list_of_objects)
@@ -51,10 +56,10 @@
 #'
 #' @param map_string character string that matches element names in the
 #' auto_DE_output. Normally this is set by other functions.
-#' @param auto_DE_output object (class = list) returned from a call to
+#' @param DE_output object (class = list) returned from a call to
 #'   [auto_generate_DE_results]
 #' @param search_top_level character vector of top_level_groups (see
-#'   [auto_generage_DE_results]) to search for, returning only tables from these
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
 #'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all DE
 #'   tables.
 #'
@@ -90,7 +95,7 @@
 #' @param auto_DE_output object (class = list) returned from a call to
 #'   [auto_generate_DE_results]
 #' @param search_top_level character vector of top_level_groups (see
-#'   [auto_generage_DE_results])to search for, returning only tables from these
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
 #'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all DE
 #'   tables.
 #'
@@ -121,7 +126,7 @@ GET_PIF_df <-
 #' @param auto_DE_output object (class = list) returned from a call to
 #'   [auto_generate_DE_results]
 #' @param search_top_level character vector of top_level_groups (see
-#'   [auto_generage_DE_results])to search for, returning only tables from these
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
 #'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all DE
 #'   tables.
 #'
@@ -153,10 +158,10 @@ GET_DE_by_PIF_df <-
 #' @param auto_DE_output object (class = list) returned from a call to
 #'   [auto_generate_DE_results]
 #' @param search_top_level character vector of top_level_groups (see
-#'   [auto_generage_DE_results])to search for, returning only tables from these
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
 #'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all DE
 #'   tables.
-#' @param vst_or_log2norm character vector of either: "VST", "Log2", "both"
+#' @param vst_or_log2 character vector of either: "VST", "Log2", "both"
 #'
 #' @return Returns a list of dataframes
 #'
@@ -190,39 +195,92 @@ GET_normalised_data <-
     } else if(vst_or_log2 == "VST"){
       search_l <-  stringr::str_detect(names(out), "vsd$")
       out <- out[search_l]
+      return(out)
 
     } else if(vst_or_log2 == "Log2"){
       search_l <-  stringr::str_detect(names(out), "log2norm$")
       out <- out[search_l]
+      return(out)
 
     }
 
   }
 
+#' GET dds_wald objects
+#'
+#' Accessor function to the DESeqDataSet objects (derived from the
+#' SummarizedExperiment object parsed to [auto_generate_DE_results]) after the
+#' call to DESeq2 (via [auto_generate_DE_results]).
+#'
+#'
+#' @param auto_DE_output object (class = list) returned from a call to
+#'   [auto_generate_DE_results]
+#' @param search_top_level character vector of top_level_groups (see
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
+#'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all objects.
+#'
+#' @return Returns a list of 1 level with all dds_wald objects
+#' (of class DESeqDataSet)
+#'
+#' @export
+#'
+GET_dds_wald_objects <-
+  function(auto_DE_output,
+           search_top_level  = NULL){
 
-# GET_dds_wald_object <-
-#   function(auto_DE_output){
-#
-#   }
+    if(is.null(search_top_level)){
+      .GET_table_generic("dds_wald_object",
+                         auto_DE_output)
+    } else {
+      .GET_table_generic("dds_wald_object",
+                         auto_DE_output,
+                         search_top_level)
+    }
 
-# GET_DESeq2_res_object <-
-#   function(auto_DE_output){
-#
-#   }
-#
+  }
+
+
+#' GET DESeq Results objects
+#'
+#' Accessor function to the results objects, containing all metadata, produced for
+#' each pairwise comparison. Most useful for accessing advanced information on how
+#' results were generated (via [auto_generate_DE_results]). This output is also
+#' used by [enrich_DE].
+#'
+#'
+#' @param auto_DE_output object (class = list) returned from a call to
+#'   [auto_generate_DE_results]
+#' @param search_top_level character vector of top_level_groups (see
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
+#'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all objects.
+#'
+#' @return Returns a list of 1 level with all DESeqResults objects
+#'
+#' @export
+
+GET_DESeq2_res_object <-
+  function(auto_DE_output,
+           search_top_level  = NULL){
+
+    if(is.null(search_top_level)){
+      .GET_table_generic("DESeq2_res_object",
+                         auto_DE_output)
+    } else {
+      .GET_table_generic("DESeq2_res_object",
+                         auto_DE_output,
+                         search_top_level)
+    }
+  }
 
 
 
-# GET_overall_plots<-
-#   function(auto_DE_output){
-#
-#   }
+
 
 
 GET_boxplot_cooks_distance <-
   function(auto_DE_output){
     plots_list <-
-      DE_out %>%
+      auto_DE_output %>%
       purrr::map("boxplot_cooks_distance")
 
 
@@ -243,7 +301,7 @@ GET_boxplot_cooks_distance <-
 #' @param type one of either: "MA" or "Pvalue" for generic MA plots used for QC
 #' or P value histograms, respectively.
 #' @param search_top_level character vector of top_level_groups (see
-#'   [auto_generage_DE_results]) to search for, returning only tables from these
+#'   [auto_generate_DE_results]) to search for, returning only tables from these
 #'   groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all DE
 #'   tables.
 #'
@@ -268,14 +326,14 @@ GET_pairwise_plots <-
     .f_view_plots <-
       function(x){
         print(x)
-        plot.new()
-        dev.off()
+        graphics::plot.new()
+        grDevices::dev.off()
       }
 
     ########################### MA ###########################
     if(type == "MA"){
       MA_list <-
-        DE_out %>%
+        auto_DE_output %>%
         purrr::map("pairwise_plots") %>%
         purrr::map('MA_plots') %>%
         .search_list_helper(search_term = search_top_level)
@@ -287,7 +345,7 @@ GET_pairwise_plots <-
     } else if(type == "Pvalue"){
       ########################### Pvalue histograms ###########################
       Pvalue_histogram_list <-
-        DE_out %>%
+        auto_DE_output %>%
         purrr::map("pairwise_plots") %>%
         purrr::map('Pvalue_histogram') %>%
         .search_list_helper(search_term = search_top_level)
@@ -331,14 +389,14 @@ GET_overall_plots <-
     .f_view_plots <-
       function(x){
       print(x)
-      plot.new()
-      dev.off()
+      graphics::plot.new()
+      grDevices::dev.off()
     }
 
     ########################### PCA ###########################
     if(type == "PCA"){
     PCA_list <-
-      DE_out %>%
+      auto_DE_output %>%
       purrr::map("overall_plots") %>%
       purrr::map('PCA')
 
@@ -350,7 +408,7 @@ GET_overall_plots <-
     } else if(type == "heatmap"){
     ########################### heatmaps ###########################
     heatmaps_list <-
-      DE_out %>%
+      auto_DE_output %>%
       purrr::map("overall_plots") %>%
       purrr::map('heatmap')
 
@@ -361,7 +419,7 @@ GET_overall_plots <-
     } else if(type == "sample_distances"){
     ########################### sample_dist_list ###########################
     samp_dist_list <-
-      DE_out %>%
+      auto_DE_output %>%
       purrr::map("overall_plots") %>%
       purrr::map('Sample_distances')
 
