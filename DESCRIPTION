@@ -43,5 +43,7 @@ LazyData: true
 Suggests: 
     knitr,
     CeTF,
-    rmarkdown
+    rmarkdown,
+    VennDiagram,
+    RColorBrewer
 VignetteBuilder: knitr
