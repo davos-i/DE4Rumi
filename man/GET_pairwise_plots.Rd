@@ -6,14 +6,21 @@
 \usage{
 GET_pairwise_plots(
   auto_DE_output,
-  type = c("PCA", "heatmap", "sample_distances")
+  type = c("MA", "Pvalue"),
+  search_top_level = NULL
 )
 }
 \arguments{
 \item{auto_DE_output}{object (class = list) returned from a call to
 \link{auto_generate_DE_results}}
 
-\item{type}{one of either: "PCA", "heatmap" or "sample_distances"}
+\item{type}{one of either: "MA" or "Pvalue" for generic MA plots used for QC
+or P value histograms, respectively.}
+
+\item{search_top_level}{character vector of top_level_groups (see
+\link{auto_generate_DE_results}) to search for, returning only tables from these
+groups. e.g. \code{c("ARC","LIV")}. If not provided it will return all DE
+tables.}
 }
 \value{
 Returns a list of 1 level with all plots of \code{type}. Also prints
