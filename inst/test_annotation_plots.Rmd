@@ -115,18 +115,14 @@ MA_plots_out$`MA Plot of LIV_HCP.HP.UMEI vs LIV_LCP.HP.UMEI`
 #RIF
 ```{r}
 
-# access data
-DE_dataframes_list <- 
-  DE_out %>% 
-  purrr::map("DE_by_PIF_df")
-  
-#DE_dataframes_list %>% names()
+# Prepare normalised data. Take note of the [[1]] to make sure it's not a list
+vst_norm_data <- GET_normalised_data(full_norm, vst_or_log2 = "VST")[[1]] 
 
-
+# Run RIF
 RIF_output <- 
-  calculate_RIF(DE_data_list = DE_dataframes_list,
+  calculate_RIF(DE_output = DE_out,
                 TFs = NA,
-                norm_exp_data = full_norm$Whole_data_normalisation_output$normalised_data$vsd,
+                norm_exp_data = vst_norm_data ,
                 colData = SummarizedExperiment::colData(test_data),
                 results_contrast_factor = Region_Diet,
                 samples_colname = sample_names,
@@ -134,7 +130,7 @@ RIF_output <-
                 gene_annotations = test_annot
               )
 
-RIF_output$`LIV - RIF`$`LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI` %>% View()
+#RIF_output$`LIV - RIF`$`LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI` %>% View()
 
 #Collapse into 1 large dataframe
 # RIF_bound<- 
@@ -142,6 +138,9 @@ RIF_output$`LIV - RIF`$`LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI` %>% View()
 
 ```
 
+```{r}
+RIF_output
+```
 
 ```{r}
 RIF_bound <- 

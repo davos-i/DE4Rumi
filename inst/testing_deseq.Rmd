@@ -91,7 +91,7 @@ make_summarized_experiment_object(counts_data = cts_filtered,
 
 
 #subset columns to be every n, to make testing quicker
-test_data <- test_data[,seq(0,ncol(cts_filtered)-1,4)] 
+#test_data <- test_data[,seq(0,ncol(cts_filtered)-1,2)] 
 
 
 ```
@@ -247,6 +247,28 @@ MA_plots <- GET_pairwise_plots(auto_DE_output = DE_out,
 
 ```
 
+### DESeqDataSet (dds_wald) objects
+These are the DESeqDataSet objects (derived from the SummarizedExperiment object parsed to `auto_generate_DE_results`) after the call to DESeq2 (via `auto_generate_DE_results`).
+```{r}
+dds_objects <- GET_dds_wald_objects(auto_DE_output = DE_out,
+                     search_top_level = "LIV")
+#rm(dds_objects)
+```
+
+
+### Get results objects (class DESeqResults)
+These are the results objects, containing all metadata, produced for 
+each pairwise comparison. Most useful for accessing advanced information on how
+results were generated. 
+```{r}
+results_objects <- GET_DESeq2_res_object(auto_DE_output = DE_out,
+                                         search_top_level = c("ARC", "LIV"))
+
+#rm(results_objects)
+```
+
+
+
 
 
 ## 6.b. Manually accessing results
@@ -260,6 +282,7 @@ The first level of the list can be accessed by using the $ sign. To see all avai
 
 DE_out %>% names()
 ```
+
 Multiple $ can be used for recurring levels. Pressing the Tab button on keyboard shows options as well.
 Likewise, if a dataframe is the lowest level of the list that is accessed with a $, then it will also allow the column names to be accessed with \$ as well. 
 ```{r eval=FALSE}
@@ -270,12 +293,13 @@ DE_out$ARC_DESeq2_Output$DESeq2_annot_df$`ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI`
 DE_out$ARC_DESeq2_Output$DESeq2_annot_df$`ARC_HCP.HP.RMEI vs ARC_HCP.HP.UMEI`$gene_ensembl
 ```
 
-Using a call to purrr::map with a string will iterate over each of the entries in the first level of the list and search within those lists to return a new list of only entries with matching names. 
+Using a call to purrr::map with a string will iterate over each of the entries in the first level of the list and search within those lists to return a new list of only entries with matching names. This is basically what the \code{GET_*} functions use to access results.
 ```{r}
 #Check what second level entries exist 
 DE_out$ARC_DESeq2_Output %>% names()
 
 ```
+
 ```{r}
 #The string in call to map must be one of the options produced from above. 
 #This works because each Region's entry has the same underlying structure.
@@ -291,154 +315,67 @@ A call to unlist(recursive = FALSE) removes the first layer of the list, which i
 DE_out %>% 
   purrr::map("DESeq2_res_object") %>% 
   unlist(recursive = FALSE) %>% 
-  str(max.level = 2, list.len = 10) #shows first 10 of 60 for easier reading
+  str(max.level = 2, list.len = 10) #shows the structure of the top 2 levels of the first 10 of 60 entries for easier reading
 ```
 
 
-
-
-### Results objects
-Same technique applies as above
-```{r}
-#Select DE tables to a list with 1 layer
-DE_results_objects <- 
-  DE_out %>% 
-  purrr::map("DESeq2_res_object") %>% 
-  unlist(recursive = FALSE)
-
-#access individual tables by using $ 
-#e.g.
-DE_results_objects$`LIV_DESeq2_Output.LIV_HCP.HP.UMEI vs LIV_LCP.LP.UMEI`
-
-```
-## Stored plots
-### Pairwise plots
-```{r}
-#View which pairwise plots are available to access
-DE_out$ARC_DESeq2_Output$pairwise_plots %>% names()
-```
-
-
-### Overall Plots
-```{r}
-#View which overall plots are available to access
-DE_out$ARC_DESeq2_Output$overall_plots %>% names()
-```
-
-#### Boxplot of cooks distances
-```{r}
-
-```
-
-
-
-
-#### PCA
-Some plots are in a different format (ggplots) and will show without function. e.g. the PCA plots
-```{r}
-#Store pvalue histograms into a new object
-PCA_list <- 
-  DE_out %>% 
-  purrr::map("overall_plots") %>%  
-  purrr::map('PCA') 
-
-#View plots (Returned in output below this code chunk)
-PCA_list
-  
-```
-
-#### Heatmaps
-```{r fig.width = 10}
-#Store pvalue histograms into a new object
-heatmaps <- 
-  DE_out %>% 
-  purrr::map("overall_plots") %>%  
-  purrr::map('heatmap') 
-  
-#View plots (Returned in output below this code chunk)
-
-  heatmaps %>% 
-  purrr::map(function(x){
-    print(x)
-    plot.new()
-    dev.off()
-    })
-```
-
-#### Sample-Sample Distances
-```{r fig.width = 10}
-#Store pvalue histograms into a new object
-samp_dist_list <- 
-  DE_out %>% 
-  purrr::map("overall_plots") %>%  
-  purrr::map('Sample_distances') 
-  
-#View plots (Returned in output below this code chunk)
-
-  samp_dist_list %>% 
-  purrr::map(function(x){
-    print(x)
-    plot.new()
-    dev.off()
-    })
-```
 
 
 # 7. Filter and re-run
+After viewing the results, particularly the cooks distances and the overall plots, a decision can be made to exclude outlier samples. For example, one might choose to remove the samples named: "ARC_88__LCP-LP-UMEI" and "LIV_77__HCP-HP-UMEI"
+This can be specified with an additional call to `auto_generate_DE_results`
+The same GET_* functions can then be used to access results from DE_out_2.
+
 ```{r}
+#call DE again, without these samples
+DE_out_2 <- 
+  auto_generate_DE_results(se_data = test_data$sample_names,
+                           top_level_groups = c("ARC", "LIV"),
+                           top_level_colname = Region,
+                           sample_colname = sample_names,
+                           samples_to_remove = c("ARC_88__LCP-LP-UMEI", 
+                                                 "LIV_77__HCP-HP-UMEI"),
+                           DESeq2_formula_design = ~Region_Diet,
+                           rowSums_filter = 10, #for dds filtering
+                           results_contrast_factor = Region_Diet,
+                           results_combinations = NA,
+                           use_IHW_filtering = TRUE,
+                           alpha = 0.05,
+                           gene_annotations = test_annot,
+                           export_tables = FALSE,
+                           export_dir = "./outputs/",
+                           whole_data_normalisation = FALSE)
 
 ```
 
 
 # 8. Generate whole dataset normalised counts
+Remember to include any samples to remove, if required.
 ```{r}
 
-test_data2 <- test_data %>% SummarizedExperiment::subset(
-  select = SummarizedExperiment::colData(test_data)[["Region"]] %in% c("ARC", "LIV"))
-
 full_norm <- 
-  auto_generate_DE_results(se_data = test_data2,
+  auto_generate_DE_results(se_data = test_data,
                            top_level_colname = Region,
                            sample_colname = sample_names,
                            samples_to_remove = NA,
                            DESeq2_formula_design = ~Region_Diet,
                            gene_annotations = test_annot,
-                           export_tables = TRUE,
+                           export_tables = FALSE,
                            export_dir = "./outputs/",
-                           whole_data_normalisation = TRUE)
+                           whole_data_normalisation = TRUE) #This is important!
 
 
 ```
 
 # boxplot cooks distance
 ```{r}
-full_norm$Whole_data_normalisation_output$boxplot_cooks_distance
+#full_norm$Whole_data_normalisation_output$boxplot_cooks_distance
+GET_boxplot_cooks_distance(full_norm)
 ```
 
 
-
-```{r}
-full_norm$Whole_data_normalisation_output$normalised_data$vsd
-```
-
-
-
-
-#Workign
-```{r eval = FALSE}
-#testing how many have real names
- x %>% 
-        as.data.frame() %>% 
-        tibble::rownames_to_column(var = "gene_ensembl") %>%
-        dplyr::left_join(annot, by = c("gene_ensembl")) %>%
-        dplyr::select(.data$gene_ensembl,
-                      .data$gene_name,
-                      .data$description,
-                      tidyselect::everything()) %>% 
-        arrange(.data$padj)
-```
-
-## Code for renaming old cts tables
+#Working
+Code for renaming old cts tables
 ```{r eval=FALSE, include=FALSE}
 #read in count table - hypothalamus
 

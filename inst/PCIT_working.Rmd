@@ -1,0 +1,108 @@
+---
+title: "PCIT - Sheep - DE only"
+date: "24/09/2020"
+author: "David Innes"
+output: html_notebook
+---
+
+
+```{r}
+# library(plyr)
+# library(data.table)
+# library(tidyverse)
+# library(RColorBrewer)
+# library(VennDiagram)
+# library(magrittr)
+```
+# Prepare PCIT function
+```{r}
+vst_norm_data <- GET_normalised_data(full_norm, vst_or_log2 = "VST")[[1]] 
+
+selected_for_PCIT <- 
+  PCIT_prepare_data(data_type_selection = c("DE", "PIF", "RIF"), 
+                    norm_exp_data = vst_norm_data,
+                    DE_full_out = DE_out,
+                    RIF_output_data = RIF_output,
+                    search_top_level = NULL,
+                    filter_norm_data_columns = TRUE,
+                    DEn = 40 ,
+                    PIF_sig = 2.58,
+                    PIFn = 20,
+                    RIF_sig = 2.58,
+                    RIFn = 20, 
+                    export_tables = TRUE,
+                    export_venn_plot = FALSE,
+                    export_dir = "./outputs/")
+```
+#Using PCIT_DOS from Toni
+```{r eval=FALSE}
+system2("PCIT_DOS.exe", wait = TRUE, invisible = FALSE, input =  "PCIT-filtered_norm_expression_GENE_NAME_20211207_1645.txt")
+
+
+
+
+toni_PCIT <- data.table::fread(file = "./PCIT-filtered_norm_expression_GENE_NAME_20211207_1645.txt_out.txt")
+
+toni_PCIT %>% dim()
+PCIT_out$tab %>% dim()
+
+
+
+
+  threshold <- 0.8
+  # Plot
+  full_output0 <- toni_PCIT %>% dplyr::rename(From = V1, To = V2, cor = V3, sig = V4)
+  full_output0 <- PCIT_out$tab %>% dplyr::rename(From = gene1, To = gene2, cor = corr1, sig = corr2)
+  
+  PCIT_plot <- ggplot(full_output0, aes(x = cor)) + 
+    geom_histogram(binwidth = 0.01) + 
+    geom_histogram(data = . %>% dplyr::filter(!sig == 0),aes(x = sig), colour = 'red', binwidth = 0.01)+
+    geom_histogram(data = . %>% dplyr::filter((!sig == 0 & sig > threshold) | (!sig == 0 & sig <(-threshold))), 
+                   aes(x = sig), colour = 'blue', binwidth = 0.01)
+  
+  
+  PCIT_plot
+  
+
+
+
+```
+
+
+
+
+
+# Run PCIT function
+```{r}
+
+PCIT_norm_counts <- selected_for_PCIT$PCIT_normalised_counts
+
+
+PCIT_out <- 
+  PCIT_calculate(norm_counts_for_PCIT = PCIT_norm_counts,
+               key_colname = "gene_name")
+
+
+#View output table
+PCIT_out$tab %>% head()
+
+```
+
+
+```{r}
+PCIT_filter_out <- 
+  PCIT_filter_output(PCIT_out_data = PCIT_out,
+                   cor_threshold = 0.9,
+                   export_dir = "./outputs/PCIT/")
+PCIT_filter_out
+```
+
+
+
+```{r}
+DE <-
+        .prep_PCIT_DE(DE_full_out = DE_out,
+                      search_top_level = c("ARC"),
+                      DEn = 20)
+```
+
