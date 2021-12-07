@@ -9,6 +9,7 @@ PCIT_prepare_data(
   norm_exp_data,
   DE_full_out,
   RIF_output_data,
+  gene_annotations,
   search_top_level = NULL,
   filter_norm_data_columns = TRUE,
   DEn,
@@ -31,6 +32,8 @@ PCIT_prepare_data(
 
 \item{RIF_output_data}{Full output of \link{calculate_RIF}, if "RIF" included in
 \code{data_type_selection}.}
+
+\item{gene_annotations}{Output from call to \link{annotate_gene_ensembl}}
 
 \item{search_top_level}{character vector of top_level_groups (see
 \link{auto_generate_DE_results}) to search for, returning only tables from these

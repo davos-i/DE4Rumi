@@ -11,7 +11,8 @@ PCIT_filter_output(PCIT_out_data, cor_threshold, export_dir)
 
 \item{cor_threshold}{Threshold for filtering PCIT correlations (both positive and negative)}
 
-\item{export_dir}{}
+\item{export_dir}{string. "./" indicates relative to working directory. IF
+this directory doesn't exist, it will be created. Defaults to "./outputs/".}
 }
 \value{
 Returns a ggplot/ggarrange object of density plots based on input

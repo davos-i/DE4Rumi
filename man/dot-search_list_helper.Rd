@@ -16,8 +16,9 @@ searched. Inherited from other functions.}
 
 \item{search_term}{character vector of top_level_groups (see
 \link{auto_generate_DE_results}) to search for, returning only list entries from
-these groups. e.g. \code{c("ARC","LIV")}. Inherited from other functions.
-@param patern_extract_top_level string representing a regex match to return
+these groups. e.g. \code{c("ARC","LIV")}. Inherited from other functions.}
+
+\item{pattern_extract_top_level}{string representing a regex match to return
 the names of the top level. Default works for all accessors from DE output.
 RIF requires unique.}
 }

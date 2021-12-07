@@ -7,6 +7,9 @@
 PCIT_calculate(norm_counts_for_PCIT, key_colname = "gene_name")
 }
 \arguments{
+\item{norm_counts_for_PCIT}{Normalised counts for selected genes. Normally
+this is produced by a call to \link{PCIT_prepare_data}.}
+
 \item{key_colname}{string of the name of column to be used as key, typically
 \code{"gene_ensembl"} or \code{"gene_name"}.}
 }
