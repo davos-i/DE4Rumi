@@ -60,7 +60,7 @@ calculate_RIF <- function(DE_output,
   f_by_top_level <-
     function(.x, .y, cf, col_of_sam){
 
-      list_of_DE_tables <<- .x
+      list_of_DE_tables <- .x
       top_level_name <- .y
 
       ################################################################# #
@@ -230,8 +230,8 @@ calculate_RIF <- function(DE_output,
             message(crayon::magenta("\n",
                                     stringr::str_c(top_level_name, pairwise_comparison , sep = " - "),
                                     "\n", "Did not run RIF -- Number of target genes: ", length(Target)))
-            #return an empty dataframe
-            RIF_out <- data.frame()}
+            #return nothing
+            RIF_out <- NULL}
           return(RIF_out)
         }
 
@@ -240,6 +240,9 @@ calculate_RIF <- function(DE_output,
                         f_by_pairwise,
                         cf = cf,
                         col_of_sam = col_of_sam)
+
+      ## remove NULL entries here
+      out <- out %>% purrr::discard(is.null)
 
       message(crayon::black$bgCyan$bold(paste("\n\n ******************* End of - ",
                                               top_level_name,
