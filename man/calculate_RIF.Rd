@@ -5,7 +5,7 @@
 \title{Calculate RIF scores}
 \usage{
 calculate_RIF(
-  DE_data_list,
+  DE_output,
   TFs,
   norm_exp_data,
   gene_annotations,
@@ -16,9 +16,8 @@ calculate_RIF(
 )
 }
 \arguments{
-\item{DE_data_list}{A list of named lists containing DE dataframes. Output of
-\link{auto_generate_DE_results} that has been prepared by calling
-\code{purrr::map(DE_out,"DE_by_PIF_df")}}
+\item{DE_output}{object (class = list) returned from a call to
+\link{auto_generate_DE_results}}
 
 \item{TFs}{character vector of Transcription Factors to use for RIF
 calculations. Optional and only used if \code{all_genes_as_TF = FALSE}}

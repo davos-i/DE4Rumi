@@ -53,6 +53,9 @@ usethis::use_package("openxlsx")
 #usethis::use_package("ggpubr")
 usethis::use_package("gridExtra")
 usethis::use_package("CeTF", type = "Suggests") #bioconductor
+usethis::use_package("VennDiagram", type = "Suggests")
+usethis::use_package("RColorBrewer", type = "Suggests")
+
 
 #uses .data from rlang
 usethis::use_import_from("rlang", ".data")

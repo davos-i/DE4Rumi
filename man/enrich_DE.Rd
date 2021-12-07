@@ -46,10 +46,10 @@ at: https://biit.cs.ut.ee/gprofiler/page/archives}
 
 \item{export_tables}{logical. \code{TRUE} indicates the normalised counts
 tables, both vsd and log2norm, annotated with gene names and descriptions,
-are exported to \code{"./outputs/normalised_counts/"}}
+are exported to \code{export_dir}}
 
 \item{export_dir}{string. "./" indicates relative to working directory. IF
-this directory doesn't exist, it will be created.}
+this directory doesn't exist, it will be created. Defaults to "./outputs/".}
 }
 \value{
 Returns a list of tables of same length as \code{list_DE_obj}, each with

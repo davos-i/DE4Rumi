@@ -10,7 +10,7 @@
 #' @param search_term character vector of top_level_groups (see
 #'   [auto_generate_DE_results]) to search for, returning only list entries from
 #'   these groups. e.g. \code{c("ARC","LIV")}. Inherited from other functions.
-#'  @param patern_extract_top_level string representing a regex match to return
+#'  @param pattern_extract_top_level string representing a regex match to return
 #'  the names of the top level. Default works for all accessors from DE output.
 #'  RIF requires unique.
 #'
@@ -23,7 +23,7 @@
 
     #get top level name options and check search_top_level is one of them
     names_in_list <-  names(list_of_objects) %>%
-      stringr::str_extract(pattern = )
+      stringr::str_extract(pattern = pattern_extract_top_level)
 
     if(is.null(search_term)){
       return(list_of_objects)

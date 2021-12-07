@@ -43,7 +43,7 @@
 #' @param gene_annotations Output from call to [annotate_gene_ensembl]
 #' @param export_tables logical. \code{TRUE} indicates the normalised counts
 #'   tables, both vsd and log2norm, annotated with gene names and descriptions,
-#'   are exported to \code{"./outputs/normalised_counts/"}
+#'   are exported to \code{export_dir}
 #' @param export_dir string. "./" indicates relative to working directory. IF
 #'   this directory doesn't exist, it will be created.
 #' @param whole_data_normalisation logical. Should DESEQ2 be run for pairwise

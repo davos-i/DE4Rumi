@@ -66,7 +66,7 @@ others.}
 
 \item{export_tables}{logical. \code{TRUE} indicates the normalised counts
 tables, both vsd and log2norm, annotated with gene names and descriptions,
-are exported to \code{"./outputs/normalised_counts/"}}
+are exported to \code{export_dir}}
 
 \item{export_dir}{string. "./" indicates relative to working directory. IF
 this directory doesn't exist, it will be created.}
