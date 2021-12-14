@@ -40,12 +40,18 @@ auto_plot_multi_MA <-
 
 
     if(any(is.na(list_plot_titles))){
-      list_of_names <- names(PIF_list) %>%
+
+     list_of_names <- names(PIF_list) %>%
       stringr::str_split(pattern = "-", n = 2, simplify = TRUE) %>%
       magrittr::extract(,2) %>%
       stringr::str_trim()
 
-    list_plot_titles <- paste("MA Plot of", list_of_names)
+      top_level_names <- names(PIF_list) %>%
+        stringr::str_split(pattern = "_", n = 2, simplify = TRUE) %>%
+        magrittr::extract(,1) %>%
+        stringr::str_trim()
+
+    list_plot_titles <- paste("MA Plot of", top_level_names, "-", list_of_names)
 
     } else{message(crayon::red("Using custom titles from list_plot_titles"))}
 
