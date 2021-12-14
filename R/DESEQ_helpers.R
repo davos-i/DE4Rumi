@@ -56,17 +56,17 @@ check_count_matrix <-
 
     if(names_logical == TRUE){
       message(crayon::black$bgGreen$bold("PASS: All columns in count_data have matching data in colData"))
-      if(colData_names_logical == FALSE){
-        message(crayon::red$bold("FAIL: colData has entries in column_with_col_names that do not match a column in count_data. Potentially missing data?"))
-        message(crayon::red(paste("Entries in colData with no matching counts data:", paste(colData_missing_names, collapse = ", "))))
-        stop("Checks terminated. See notes in Console. Run subset_colData() and try again.")
-      }
     } else if(names_logical == FALSE){
       #2 if not, which ones are missing
       message("FAIL: Not all columns in count_data have matching data in colData")
       message("Missing samples:")
       print(count_data_names[which(!(count_data_names %in% colData_names))])
       message("Function will now output count_data without these columns!!")
+    }
+    if(colData_names_logical == FALSE){
+      message(crayon::red$bold("FAIL: colData has entries in column_with_col_names that do not match a column in count_data. Potentially missing data?"))
+      message(crayon::red(paste("Entries in colData with no matching counts data:", paste(colData_missing_names, collapse = ", "))))
+      stop("Checks terminated. See notes in Console. Run subset_colData() and try again.")
     }
 
     #re-order count matrix columns to match coldata
