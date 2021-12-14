@@ -45,5 +45,8 @@ Suggests:
     CeTF,
     rmarkdown,
     VennDiagram,
-    RColorBrewer
+    RColorBrewer,
+    ggpubr,
+    lemon,
+    viridis
 VignetteBuilder: knitr

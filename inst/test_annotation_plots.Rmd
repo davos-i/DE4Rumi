@@ -149,6 +149,30 @@ RIF_bound <-
 
 ```
 
+# plot genes of interest
+```{r}
+vst_norm_data <- GET_normalised_data(full_norm, vst_or_log2 = "VST")[[1]] 
+
+p_out <- 
+  plot_genes_of_interest(norm_exp_data = vst_norm_data,
+           DE_full_out = DE_out,
+           se_data = test_data,
+           gene_annotations = test_annot,
+           selected_genes = c("ACTA1", "NPY", "IGF1"),
+           top_level_colname = Region,
+           results_contrast_factor = Region_Diet,
+           sample_colname = sample_names,
+           top_level_groups = c("ARC", "LIV", "DUO", "VMH"),
+           plot_groups_colname = Diet, 
+           max_genes_per_plot = 2,
+           x_label = "Treatment",
+           p_thresh = 0.05)
+
+
+p_out
+
+```
+
 
 
 

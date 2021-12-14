@@ -55,6 +55,9 @@ usethis::use_package("gridExtra")
 usethis::use_package("CeTF", type = "Suggests") #bioconductor
 usethis::use_package("VennDiagram", type = "Suggests")
 usethis::use_package("RColorBrewer", type = "Suggests")
+usethis::use_package("ggpubr", type = "Suggests")
+usethis::use_package("lemon", type = "Suggests")
+usethis::use_package("viridis", type = "Suggests")
 
 
 #uses .data from rlang
