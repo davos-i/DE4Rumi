@@ -297,10 +297,31 @@ PCIT_out$tab %&gt;% dim()
 <h1>Run PCIT function</h1>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5QQ0lUX25vcm1fY291bnRzIDwtIHNlbGVjdGVkX2Zvcl9QQ0lUJFBDSVRfbm9ybWFsaXNlZF9jb3VudHNcblxuXG5QQ0lUX291dCA8LSBcbiAgUENJVF9jYWxjdWxhdGUobm9ybV9jb3VudHNfZm9yX1BDSVQgPSBQQ0lUX25vcm1fY291bnRzLFxuICAgICAgICAgICAgICAga2V5X2NvbG5hbWUgPSBcImdlbmVfbmFtZVwiKVxuXG5cbiNWaWV3IG91dHB1dCB0YWJsZVxuUENJVF9vdXQkdGFiICU+JSBoZWFkKClcblxuYGBgIn0= -->
+<pre class="r"><code>
+PCIT_norm_counts &lt;- selected_for_PCIT$PCIT_normalised_counts
+
+
+PCIT_out &lt;- 
+  PCIT_calculate(norm_counts_for_PCIT = PCIT_norm_counts,
+               key_colname = &quot;gene_name&quot;)
+
+
+#View output table
+PCIT_out$tab %&gt;% head()
+</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuUENJVF9maWx0ZXJfb3V0IDwtIFxuICBQQ0lUX2ZpbHRlcl9vdXRwdXQoUENJVF9vdXRfZGF0YSA9IFBDSVRfb3V0LFxuICAgICAgICAgICAgICAgICAgIGNvcl90aHJlc2hvbGQgPSAwLjksXG4gICAgICAgICAgICAgICAgICAgZXhwb3J0X2RpciA9IFwiLi9vdXRwdXRzL1BDSVQvXCIpXG5QQ0lUX2ZpbHRlcl9vdXRcbmBgYCJ9 -->
+<pre class="r"><code>PCIT_filter_out &lt;- 
+  PCIT_filter_output(PCIT_out_data = PCIT_out,
+                   cor_threshold = 0.9,
+                   export_dir = &quot;./outputs/PCIT/&quot;)
+PCIT_filter_out</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->

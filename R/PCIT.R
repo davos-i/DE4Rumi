@@ -611,6 +611,7 @@ PCIT_prepare_data <-
 #'
 #' @return Returns a list of:
 #'
+#' @export
 PCIT_calculate <-
   function(norm_counts_for_PCIT,
            key_colname = "gene_name")
@@ -674,6 +675,7 @@ PCIT_calculate <-
 #' PCIT data. Also exports the required data for use in Cytoscape to
 #'  \code{export_dir}.
 #'
+#' @export
 
 PCIT_filter_output <-
   function(PCIT_out_data,
