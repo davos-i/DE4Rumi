@@ -32,8 +32,8 @@
 #' @param results_combinations Either \code{NA}, which will automatically
 #'   generate all possible pairwise combinatios of the
 #'   \code{results_contrast_factor} OR a list of pairwise comparisons with each
-#'   element containing 2 strings, numerator and denominator, respectively. See
-#'   \code{?DESeq2::results} for requirements. Defaults to \code{NA}.
+#'   element containing 2 strings, numerator and denominator, respectively. Should
+#'   match format of output from [make_pairwise_combinations]. Defaults to \code{NA}.
 #' @param use_IHW_filtering logical. Should Independent Hypothesis Weighting be
 #'   used when calculating results? \code{TRUE}, the default, indicates yes. See
 #'   [IHW::ihw] or \code{vignette("DESeq2")} for more details.
@@ -177,6 +177,7 @@ function(se_data,
 
         res_out <-   .calculate_DESEQ_results(dds_object = dds_wald,
                                               contrast_factor = !!cf,
+                                              combinations = results_combinations,
                                               alpha = a,
                                               use_IHW_filtering = use_IHW_filtering)
 

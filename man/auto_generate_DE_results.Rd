@@ -52,7 +52,7 @@ filters internally as well. Defaults to 10.}
 generate all possible pairwise combinatios of the
 \code{results_contrast_factor} OR a list of pairwise comparisons with each
 element containing 2 strings, numerator and denominator, respectively. See
-\code{?DESeq2::results} for requirements. Defaults to \code{NA}.}
+\link[DESeq2:results]{DESeq2::results} for requirements. Defaults to \code{NA}.}
 
 \item{use_IHW_filtering}{logical. Should Independent Hypothesis Weighting be
 used when calculating results? \code{TRUE}, the default, indicates yes. See
