@@ -30,13 +30,13 @@
 #' @export
 
 calculate_RIF <- function(DE_output,
-                          TFs,
-                          norm_exp_data,
-                          gene_annotations,
-                          all_genes_as_TF = FALSE,
-                          colData,
-                          results_contrast_factor,
-                          samples_colname){
+                           TFs,
+                           norm_exp_data,
+                           gene_annotations,
+                           all_genes_as_TF = FALSE,
+                           colData,
+                           results_contrast_factor,
+                           samples_colname){
 
 
   DE_data_list <- DE_output %>% purrr::map("DE_by_PIF_df")
@@ -75,12 +75,12 @@ calculate_RIF <- function(DE_output,
                                               "******************* \n")))
 
       pairwise_names <- names(list_of_DE_tables) #%>%
-        #stringr::str_split(pattern = "\\.", n = 2, simplify = TRUE) %>%
-        #magrittr::extract(,2) %>% as.list()
+      #stringr::str_split(pattern = "\\.", n = 2, simplify = TRUE) %>%
+      #magrittr::extract(,2) %>% as.list()
 
 
       f_by_pairwise <-
-        function(.x, .y, cf, col_of_sam){
+        function(.x, .y, cf, col_of_sam, top_level_name){
 
           DE_table <- .x
           pairwise_comparison <- .y
@@ -93,6 +93,7 @@ calculate_RIF <- function(DE_output,
           #
           coldata_sub <-
             col_annot %>%
+            dplyr::filter(stringr::str_detect(.data$sample_names,  top_level_name)) %>%
             dplyr::filter(!!cf  %in% current_condition1vscondition2) #%>% arrange()
 
           ################################################################ #
@@ -124,14 +125,14 @@ calculate_RIF <- function(DE_output,
             if(is.na(TFs)){
               stop("No TFs provided and all_genes_as_TF == FALSE")
             } else{
-            TFs0 <- TFs #This is normally a downloaded list of known TFs
+              TFs0 <- TFs #This is normally a downloaded list of known TFs
             }
           }
           ################################################################# #
 
 
           if(length(Target) > 1){
-            #target_list_output[[paste(region0,diet_compare0,Sys.time(),sep = "_")]] <<- list(Target_genes = target_genes, TF = TFs0)
+            #target_list_output[[paste(region0,diet_compare0,Sys.time(),sep = "_")]] <- list(Target_genes = target_genes, TF = TFs0)
 
             ################################################################# #
             # Verify TF and Target genes
@@ -145,8 +146,8 @@ calculate_RIF <- function(DE_output,
 
             # print details to console
             message(crayon::yellow("\n", paste0(top_level_name, " - ", pairwise_comparison),
-                                    "\n", "Number of target genes: ", length(Target),
-                                    "\n", "Number of TFs (or genes as TFS): ", length(TFs0)))
+                                   "\n", "Number of target genes: ", length(Target),
+                                   "\n", "Number of TFs (or genes as TFS): ", length(TFs0)))
 
             ################################################################# #
             ## Order rows of normalized count data
@@ -210,7 +211,7 @@ calculate_RIF <- function(DE_output,
                                  ntf = length(TFs0),
                                  nSamples1 = n1,
                                  nSamples2 = n2
-                                 )
+            )
 
             #Calculate mean RIF scores, absolute of mean, and arrange
             RIF_out <- RIF_out %>%
@@ -236,10 +237,11 @@ calculate_RIF <- function(DE_output,
         }
 
       out <- purrr::map2(.x = list_of_DE_tables,
-                        .y = pairwise_names,
-                        f_by_pairwise,
-                        cf = cf,
-                        col_of_sam = col_of_sam)
+                         .y = pairwise_names,
+                         f_by_pairwise,
+                         cf = cf,
+                         col_of_sam = col_of_sam,
+                         top_level_name)
 
       ## remove NULL entries here
       out <- out %>% purrr::discard(is.null)
@@ -251,13 +253,13 @@ calculate_RIF <- function(DE_output,
     }
   out2 <- purrr::map2(.x = DE_data_list,
                       .y = top_level_names_DE_data_list,
-                     .f = f_by_top_level,
-                     cf = cf,
-                     col_of_sam = col_of_sam)
+                      .f = f_by_top_level,
+                      cf = cf,
+                      col_of_sam = col_of_sam)
 
   ###################################### #
   # Rename output
- # top_names <- names(DE_data_list) %>%
+  # top_names <- names(DE_data_list) %>%
   #stringr::str_extract(pattern = "^[^_]*")
   new_names <- paste0(top_level_names_DE_data_list, " - RIF")
   out2 <- setNames(out2, new_names)
