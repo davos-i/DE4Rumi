@@ -609,7 +609,7 @@ PCIT_prepare_data <-
 #' \code{"gene_ensembl"} or \code{"gene_name"}.
 #'
 #'
-#' @return Returns a list of:
+#' @return Returns a list of: the significant correlations, raw adjacency matrix and significant adjacency matrix.
 #'
 #' @export
 PCIT_calculate <-

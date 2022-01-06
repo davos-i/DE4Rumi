@@ -14,7 +14,7 @@ this is produced by a call to \link{PCIT_prepare_data}.}
 \code{"gene_ensembl"} or \code{"gene_name"}.}
 }
 \value{
-Returns a list of:
+Returns a list of: the significant correlations, raw adjacency matrix and significant adjacency matrix.
 }
 \description{
 Wrapper for \link[CeTF:PCIT]{CeTF::PCIT} which is based on Reverter & Chan 2008. This can take
