@@ -51,8 +51,8 @@ filters internally as well. Defaults to 10.}
 \item{results_combinations}{Either \code{NA}, which will automatically
 generate all possible pairwise combinatios of the
 \code{results_contrast_factor} OR a list of pairwise comparisons with each
-element containing 2 strings, numerator and denominator, respectively. See
-\link[DESeq2:results]{DESeq2::results} for requirements. Defaults to \code{NA}.}
+element containing 2 strings, numerator and denominator, respectively. Should
+match format of output from \link{make_pairwise_combinations}. Defaults to \code{NA}.}
 
 \item{use_IHW_filtering}{logical. Should Independent Hypothesis Weighting be
 used when calculating results? \code{TRUE}, the default, indicates yes. See

@@ -1,6 +1,7 @@
 #' Calculate RIF scores
 #'
 #' Calculates 2 types of Regulatory Impact Factors, based on Reverter work.
+#' Wrapper function for [CeTF::RIF].
 #'
 #' RIF scores are ... Genes do not need to be DE to be able to have a regulatory
 #' effect...(hence, all_genes_as_TF)

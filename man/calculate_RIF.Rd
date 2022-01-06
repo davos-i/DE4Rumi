@@ -46,6 +46,7 @@ each gene)
 }
 \description{
 Calculates 2 types of Regulatory Impact Factors, based on Reverter work.
+Wrapper function for \link[CeTF:RIF]{CeTF::RIF}.
 }
 \details{
 RIF scores are ... Genes do not need to be DE to be able to have a regulatory
