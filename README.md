@@ -13,7 +13,7 @@ Semi-automatic analysis of RNA-seq datasets, incorporating DESeq2, PIF, RIF, and
 Detailed instructions available at:
 
 - [https://davos-i.github.io/Galaxy_RNASeq_Book/](https://davos-i.github.io/Galaxy_RNASeq_Book/)
-- [https://davos-i.github.io/Galaxy_RNASeq_Book/](https://davos-i.github.io/DE4Rumi_Book)
+- [https://davos-i.github.io/DE4Rumi_Book](https://davos-i.github.io/DE4Rumi_Book)
 
 ## Installation
 
