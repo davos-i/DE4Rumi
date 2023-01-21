@@ -15,6 +15,8 @@ Detailed instructions available at:
 - [https://davos-i.github.io/Galaxy_RNASeq_Book/](https://davos-i.github.io/Galaxy_RNASeq_Book/)
 - [https://davos-i.github.io/DE4Rumi_Book](https://davos-i.github.io/DE4Rumi_Book)
 
+Author: David Innes
+
 ## Installation
 
 You can install the development version of DE4Rumi from
