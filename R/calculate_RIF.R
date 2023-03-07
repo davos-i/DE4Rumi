@@ -34,7 +34,7 @@
 #' @export
 
 calculate_RIF <- function(DE_output,
-                          TFs,
+                          TFs = NULL,
                           norm_exp_data,
                           gene_annotations,
                           all_genes_as_TF = FALSE,
@@ -129,7 +129,7 @@ calculate_RIF <- function(DE_output,
           if(all_genes_as_TF == TRUE) {
             TFs0 <- names(which(rowMeans(norm_exp_sub) > 2))
           } else if(all_genes_as_TF == FALSE) {
-            if(is.na(TFs)){
+            if(is.null(TFs)){
               stop("No TFs provided and all_genes_as_TF == FALSE")
             } else{
               TFs0 <- TFs #This is normally a downloaded list of known TFs
@@ -282,10 +282,12 @@ calculate_RIF <- function(DE_output,
       message(crayon::red(paste("Directory created:", export_dir)))
     } else{message(crayon::green(paste(export_dir,"Directory exists")))}
 
-    RIF_out3 <-   out2
+    RIF_out3 <-   out2 %>% unlist(recursive = FALSE)
+
+
     names(RIF_out3) <-
       names(RIF_out3) %>%
-      stringr::str_remove_all("PIF - ") %>%
+      stringr::str_remove_all("RIF.") %>%
       stringr::str_squish() %>%
       stringr::str_remove_all(" ") %>%
       stringr::str_trunc(31,ellipsis = "")

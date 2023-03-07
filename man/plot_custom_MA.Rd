@@ -25,7 +25,8 @@ plot_custom_MA(
   export_TIFFs = FALSE,
   export_dir = "./outputs/MA_plots/",
   tiff_width = 190,
-  tiff_height = 140
+  tiff_height = 140,
+  FC_thresh = 8
 )
 }
 \arguments{
@@ -85,6 +86,8 @@ this directory doesn't exist, it will be created.}
 \item{tiff_width}{number in mm. Width of .tiff image if exported.}
 
 \item{tiff_height}{number in mm. Height of .tiff image if exported.}
+
+\item{FC_thresh}{Threshold for |Log2FC| for y-axis, default = 8.}
 }
 \value{
 returns a ggplot object

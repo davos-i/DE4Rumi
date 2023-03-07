@@ -6,13 +6,13 @@
 \usage{
 auto_generate_DE_results(
   se_data,
-  top_level_groups,
+  top_level_groups = NULL,
   top_level_colname,
   sample_colname,
   samples_to_remove = NA,
   DESeq2_formula_design,
   rowSums_filter = 10,
-  results_contrast_factor,
+  results_contrast_factor = NULL,
   results_combinations = NA,
   use_IHW_filtering = TRUE,
   alpha = 0.05,

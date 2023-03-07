@@ -6,13 +6,15 @@
 \usage{
 calculate_RIF(
   DE_output,
-  TFs,
+  TFs = NULL,
   norm_exp_data,
   gene_annotations,
   all_genes_as_TF = FALSE,
   colData,
   results_contrast_factor,
-  samples_colname
+  samples_colname,
+  export_tables = FALSE,
+  export_dir = "./outputs/"
 )
 }
 \arguments{
@@ -38,6 +40,11 @@ comparisons.e.g. Region_Diet}
 
 \item{samples_colname}{non-string. Name of \code{colData} column with
 sample names (used for filtering).}
+
+\item{export_tables}{logical. Should an excel file be exported of results? Default = FALSE}
+
+\item{export_dir}{string. "./" indicates relative to working directory. IF
+this directory doesn't exist, it will be created.}
 }
 \value{
 Returns a list of dataframes, with each pairwise comparison having
