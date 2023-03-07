@@ -1,6 +1,6 @@
 Package: DE4Rumi
 Title: Differential Expression Analysis of RNAseq in Ruminant Models
-Version: 0.0.0.9000
+Version: 0.0.2
 Authors@R: 
     person("David", "Innes", , "dave.j.innes@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6246-0489"))
