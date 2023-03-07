@@ -49,15 +49,15 @@ plot_genes_of_interest <-
     pgc <- rlang::enquo(plot_groups_colname) %>% rlang::as_name()
 
     if (!requireNamespace("ggpubr", quietly = TRUE)) {
-      stop("Package \"ggpubr\" needed for RIF function to work. Please install it using install.packages(\"ggpubr\").",
+      stop("Package \"ggpubr\" needed for plot_genes_of_interest function to work. Please install it using install.packages(\"ggpubr\").",
            call. = FALSE)
     }
     if (!requireNamespace("lemon", quietly = TRUE)) {
-      stop("Package \"lemon\" needed for RIF function to work. Please install it using install.packages(\"lemon\").",
+      stop("Package \"lemon\" needed for plot_genes_of_interest function to work. Please install it using install.packages(\"lemon\").",
            call. = FALSE)
     }
     if (!requireNamespace("viridis", quietly = TRUE)) {
-      stop("Package \"viridis\" needed for RIF function to work. Please install it using install.packages(\"viridis\").",
+      stop("Package \"viridis\" needed for plot_genes_of_interest function to work. Please install it using install.packages(\"viridis\").",
            call. = FALSE)
     }
 

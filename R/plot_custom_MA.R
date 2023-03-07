@@ -58,6 +58,7 @@
 #'   this directory doesn't exist, it will be created.
 #' @param tiff_width number in mm. Width of .tiff image if exported.
 #' @param tiff_height number in mm. Height of .tiff image if exported.
+#' @param FC_thresh Threshold for |Log2FC| for y-axis, default = 8.
 #'
 #'
 #' @return returns a ggplot object
@@ -87,7 +88,8 @@ plot_custom_MA  <-
            export_TIFFs = FALSE,
            export_dir = "./outputs/MA_plots/",
            tiff_width = 190,
-           tiff_height = 140
+           tiff_height = 140,
+           FC_thresh = 8
            ) {
 
     message(crayon::green(paste0("\nMaking ",plot_title ,"...")))
@@ -224,7 +226,7 @@ plot_custom_MA  <-
     # Identify genes that had extreme values and were not included in plots
     # extreme is classed as a log2FC > 8
     # prints names of removed genes under plot title
-    out_of_bounds_genes <- data3[which(abs(data3$log2FoldChange) > 8),]$gene_name %>% paste(collapse = ", ")
+    out_of_bounds_genes <- data3[which(abs(data3$log2FoldChange) > FC_thresh),]$gene_name %>% paste(collapse = ", ")
 
     scale_limit0 <-
       data3$log2FoldChange %>%

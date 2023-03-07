@@ -23,6 +23,9 @@
 #'   comparisons.e.g. Region_Diet
 #' @param samples_colname non-string. Name of \code{colData} column with
 #'   sample names (used for filtering).
+#' @param export_tables logical. Should an excel file be exported of results? Default = FALSE
+#' @param export_dir string. "./" indicates relative to working directory. IF
+#'   this directory doesn't exist, it will be created.
 #'
 #' @return Returns a list of dataframes, with each pairwise comparison having
 #'   own set of RIF scores: RIF1, RIF2 and mean_RIF (mean of RIF1 and RIF2, for
@@ -31,13 +34,16 @@
 #' @export
 
 calculate_RIF <- function(DE_output,
-                           TFs,
-                           norm_exp_data,
-                           gene_annotations,
-                           all_genes_as_TF = FALSE,
-                           colData,
-                           results_contrast_factor,
-                           samples_colname){
+                          TFs,
+                          norm_exp_data,
+                          gene_annotations,
+                          all_genes_as_TF = FALSE,
+                          colData,
+                          results_contrast_factor,
+                          samples_colname,
+                          export_tables = FALSE,
+                          export_dir = "./outputs/"
+                          ){
 
 
   DE_data_list <- DE_output %>% purrr::map("DE_by_PIF_df")
@@ -264,6 +270,37 @@ calculate_RIF <- function(DE_output,
   #stringr::str_extract(pattern = "^[^_]*")
   new_names <- paste0(top_level_names_DE_data_list, " - RIF")
   out2 <- setNames(out2, new_names)
+
+
+  ######################################
+  # Export tables
+
+  if(export_tables == TRUE){
+
+    if(!dir.exists(export_dir)){
+      dir.create(export_dir, recursive = TRUE)
+      message(crayon::red(paste("Directory created:", export_dir)))
+    } else{message(crayon::green(paste(export_dir,"Directory exists")))}
+
+    RIF_out3 <-   out2
+    names(RIF_out3) <-
+      names(RIF_out3) %>%
+      stringr::str_remove_all("PIF - ") %>%
+      stringr::str_squish() %>%
+      stringr::str_remove_all(" ") %>%
+      stringr::str_trunc(31,ellipsis = "")
+
+    openxlsx::write.xlsx(RIF_out3,
+                         file = paste0(export_dir,
+                                       "RIF tables ",
+                                       format(Sys.time(), "%Y%m%d_%H%M") ,
+                                       ".xlsx"),
+                         colWidths = "auto",
+                         colNamees = TRUE)
+
+    message(crayon::green(paste("RIF tables exported to an .xlsx file in the sub-directory:", export_dir)))
+  }
+
 
   return(out2)
 }
