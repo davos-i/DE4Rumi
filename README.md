@@ -23,6 +23,6 @@ You can install the development version of DE4Rumi from
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("davos-i/DE4Rumi")
+# install.packages('remotes')
+remotes::install_github("davos-i/DE4Rumi")
 ```
