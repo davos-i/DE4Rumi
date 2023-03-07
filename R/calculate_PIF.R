@@ -144,8 +144,9 @@ calculate_PIF <- function(DE_res_list,
                     !!log2column,
                     !!padjcolumn,
                     !!pif_colname,
-                    !!zpif_colname,
-                    !!.data$description) %>%
+                    !!zpif_colname
+                    #.data$description
+                    ) %>%
       dplyr::arrange(!!zpif_colname)
     }
 
