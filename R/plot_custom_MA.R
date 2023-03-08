@@ -242,7 +242,7 @@ plot_custom_MA  <-
       ggplot2::labs(x = xlab,
            y = ylab,
            title = plot_title,
-           subtitle = paste('Genes out of bounds (absolute log2FC >8): ',
+           subtitle = paste0('Genes out of bounds (absolute log2FC >', FC_thresh, '): ',
                             out_of_bounds_genes),
            color = "Legend")
 
