@@ -310,6 +310,9 @@ make_pairwise_combinations <-
 #'@param alpha numeric. What is the p-value threshold to be used for
 #'   determining significance. Used in call to [DESeq2::results] and
 #'   others.
+#'@param lfc_thresh numeric. What log2 Fold Change threshold should be applied
+#'  to determine significance in call to Used in call to [DESeq2::results].
+#'  Default is 0.
 #'@param use_IHW_filtering Logical. Inherits from larger function. If \code{TRUE}
 #'it will use a call to [IHW::ihw()] when making results.
 #'
@@ -323,6 +326,7 @@ make_pairwise_combinations <-
            contrast_factor,  #Name of column containing treatments to contrast
            combinations = NA, #If NA, uses make_pairwise_combinations()
            alpha = 0.05,
+           lfc_thresh = 0,
            use_IHW_filtering){
 
     cf <- rlang::enquo(contrast_factor)
@@ -349,6 +353,7 @@ make_pairwise_combinations <-
                                  contrast = c(contrast_factor_string,
                                               contrast_numerator,
                                               contrast_denominator),
+                                 lfcThreshold = lfc_thresh,
                                  alpha = a) %>%
             IHW::ihw(alpha = a)
           } else {
@@ -356,6 +361,7 @@ make_pairwise_combinations <-
                                  contrast = c(contrast_factor_string,
                                               contrast_numerator,
                                               contrast_denominator),
+                                 lfcThreshold = lfc_thresh,
                                  alpha = a)
         }
 

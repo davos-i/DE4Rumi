@@ -40,6 +40,9 @@
 #' @param alpha numeric. What is the p-value threshold to be used for
 #'   determining significance. Used in call to [DESeq2::results] and
 #'   others.
+#' @param lfc_thresh numeric. What log2 Fold Change threshold should be applied
+#'  to determine significance in call to Used in call to [DESeq2::results].
+#'  Default is 0.
 #' @param gene_annotations Output from call to [annotate_gene_ensembl]
 #' @param export_tables logical. \code{TRUE} indicates the normalised counts
 #'   tables, both vsd and log2norm, annotated with gene names and descriptions,
@@ -70,6 +73,7 @@ function(se_data,
          results_combinations = NA,
          use_IHW_filtering = TRUE,
          alpha = 0.05,
+         lfc_thresh = 0,
          gene_annotations,
          export_tables = FALSE,
          export_dir = "./outputs/",
@@ -179,6 +183,7 @@ function(se_data,
                                               contrast_factor = !!cf,
                                               combinations = results_combinations,
                                               alpha = a,
+                                              lfc_thresh = lfc_thresh,
                                               use_IHW_filtering = use_IHW_filtering)
 
 
