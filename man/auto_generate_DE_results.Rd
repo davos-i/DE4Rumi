@@ -16,6 +16,7 @@ auto_generate_DE_results(
   results_combinations = NA,
   use_IHW_filtering = TRUE,
   alpha = 0.05,
+  lfc_thresh = 0,
   gene_annotations,
   export_tables = FALSE,
   export_dir = "./outputs/",
@@ -61,6 +62,10 @@ used when calculating results? \code{TRUE}, the default, indicates yes. See
 \item{alpha}{numeric. What is the p-value threshold to be used for
 determining significance. Used in call to \link[DESeq2:results]{DESeq2::results} and
 others.}
+
+\item{lfc_thresh}{numeric. What log2 Fold Change threshold should be applied
+to determine significance in call to Used in call to \link[DESeq2:results]{DESeq2::results}.
+Default is 0.}
 
 \item{gene_annotations}{Output from call to \link{annotate_gene_ensembl}}
 

@@ -9,6 +9,7 @@
   contrast_factor,
   combinations = NA,
   alpha = 0.05,
+  lfc_thresh = 0,
   use_IHW_filtering
 )
 }
@@ -26,6 +27,10 @@ that will be contrasted. Should match one of the factors in DESeq2 design
 \item{alpha}{numeric. What is the p-value threshold to be used for
 determining significance. Used in call to \link[DESeq2:results]{DESeq2::results} and
 others.}
+
+\item{lfc_thresh}{numeric. What log2 Fold Change threshold should be applied
+to determine significance in call to Used in call to \link[DESeq2:results]{DESeq2::results}.
+Default is 0.}
 
 \item{use_IHW_filtering}{Logical. Inherits from larger function. If \code{TRUE}
 it will use a call to \code{\link[IHW:ihw.default]{IHW::ihw()}} when making results.}
